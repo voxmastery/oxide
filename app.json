@@ -34,7 +34,10 @@
     "backgroundColor": "#0F0E0E",
     "extra": {
       "toolchainPayloadUrl": "https://REPLACE-ME.example.invalid/oxide/toolchain/1.99.1/manifest.json",
-      "toolchainPayloadUrlNote": "PLACEHOLDER: host the output of toolchain/make-data-payload.sh and put its manifest.json URL here. See toolchain/README.md."
+      "toolchainPayloadUrlNote": "PLACEHOLDER: host the output of toolchain/make-data-payload.sh and put its manifest.json URL here. See toolchain/README.md.",
+      "eas": {
+        "projectId": "96237f86-53e2-4993-8971-287b767e2f04"
+      }
     }
   }
 }
