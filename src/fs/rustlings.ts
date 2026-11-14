@@ -4,7 +4,7 @@
 // Exercise files hold the user's code from app state when they edited it, else the original.
 import { rustlings } from '../content';
 import { useApp } from '../state/app';
-import { RUSTLINGS, read, stat, write } from './index';
+import { RUSTLINGS, read, stat, write } from './core';
 
 const SOLUTION_PLACEHOLDER =
   "fn main() {\n    // DON'T EDIT THIS SOLUTION FILE!\n    // It will be automatically filled after you finish the exercise.\n}\n";
