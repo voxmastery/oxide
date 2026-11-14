@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Platform, View } from 'react-native';
 import { Shell } from '../shell/Shell';
 import { useApp } from '../state/app';
+import { useNav } from '../nav/store';
 import { C } from '../theme/tokens';
 
 /**
@@ -15,7 +16,7 @@ export default function Index() {
   useEffect(() => {
     if (Platform.OS === 'web' && hydrated && typeof location !== 'undefined') {
       const q = new URLSearchParams(location.search);
-      if (q.get('demo') === '1' && !useApp.getState().onboarded) useApp.getState().seedDemo();
+      if (q.get('demo') === '1' && !useApp.getState().onboarded) { useApp.getState().seedDemo(); useNav.getState().reset('home'); }
       if (q.get('reset') === '1') useApp.getState().resetAll();
     }
   }, [hydrated]);
