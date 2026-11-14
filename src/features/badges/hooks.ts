@@ -11,7 +11,10 @@ export function useBadges() {
   const earned = useBadgeStore((s) => s.earned);
   return useMemo(() => {
     const list: BadgeView[] = BADGES.map((b) => ({ ...b, earnedAt: earned[b.id] ?? null }));
-    const recent = list.filter((b) => b.earnedAt).sort((a, b) => (b.earnedAt ?? 0) - (a.earnedAt ?? 0));
+    // Newest first; within the same minute (e.g. a batch), milestones before Rustlings topics.
+    const min = (b: BadgeView) => Math.floor((b.earnedAt ?? 0) / 60000);
+    const recent = list.filter((b) => b.earnedAt)
+      .sort((a, b) => min(b) - min(a) || Number(a.group === 'topics') - Number(b.group === 'topics') || (b.earnedAt ?? 0) - (a.earnedAt ?? 0));
     return { list, earned, recent, count: recent.length, total: list.length, has: (id: string) => !!earned[id] };
   }, [earned]);
 }
