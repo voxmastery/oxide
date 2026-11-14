@@ -1,4 +1,5 @@
 // Bottom sheets from design/project/Overlays.dc.html ("Popups → Bottom sheets" in design/SPEC.md).
+import { FrozenLegend, ICE, StreakFreezes, streakDayKind, useStreak } from '../features/streak';
 import React, { useState } from 'react';
 import { Linking, Share, Text, TextInput, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -129,6 +130,7 @@ const WD = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export function StreakSheet(_: OverlayProps) {
   const s = useApp();
+  const sk = useStreak();
   const st = streak(s);
   const log = todayLog(s);
   const goal = s.plan.goal;
@@ -168,14 +170,16 @@ export function StreakSheet(_: OverlayProps) {
           ))}
           {cells.map((c, i) => {
             if (!c) return <View key={`b${i}`} style={{ width: `${100 / 7}%`, height: 40 }} />;
-            const done = !!s.days[c.key]?.goalMet;
+            const kind = streakDayKind(c.key, sk, !!s.days[c.key]?.goalMet);
+            const done = kind === 'done';
+            const frozen = kind === 'frozen';
             const isToday = c.d === td;
             const past = c.d < td && c.key >= start;
-            const color = done ? C.onDone : isToday ? C.text : past ? C.tertiary : C.iconOff;
+            const color = done ? C.onDone : frozen ? ICE.fg : isToday ? C.text : past ? C.tertiary : C.iconOff;
             return (
               <View key={c.key} style={{ width: `${100 / 7}%`, height: 40, alignItems: 'center', justifyContent: 'center' }}
-                accessible accessibilityLabel={`${MONTHS[mo]} ${c.d}${done ? ', goal reached' : ''}${isToday ? ', today' : ''}`}>
-                <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: done ? C.done : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+                accessible accessibilityLabel={`${MONTHS[mo]} ${c.d}${done ? ', goal reached' : ''}${frozen ? ', freeze used' : ''}${isToday ? ', today' : ''}`}>
+                <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: done ? C.done : frozen ? ICE.tint : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={m(13, undefined, done || isToday ? 600 : 400, color)}>{c.d}</Text>
                   {isToday ? <Inset color={C.rust} width={2} radius={17} /> : null}
                 </View>
@@ -186,8 +190,10 @@ export function StreakSheet(_: OverlayProps) {
         <Row style={{ gap: 16, paddingTop: 2 }}>
           <Row style={{ gap: 6 }}><View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: C.done }} /><Text style={t(12, undefined, 400, C.secondary)}>Goal reached</Text></Row>
           <Row style={{ gap: 6 }}><View style={{ width: 10, height: 10, borderRadius: 5 }}><Inset color={C.rust} width={2} radius={5} /></View><Text style={t(12, undefined, 400, C.secondary)}>Today</Text></Row>
+          <FrozenLegend />
         </Row>
       </View>
+      <StreakFreezes />
       <Text style={t(14, 1.55, 400, C.mutedHi, { marginTop: 16, marginHorizontal: 24 })}>{note}</Text>
       <SheetEnd />
     </BottomSheet>

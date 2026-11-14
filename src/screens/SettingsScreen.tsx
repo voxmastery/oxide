@@ -19,6 +19,7 @@ import { loadLicenses, rustlings, toc, type ContentLicense } from '../content';
 import { ago, initialOf } from './home/format';
 import { useProjects } from './profile/useProjects';
 import type { ScreenProps } from './registry';
+import { FerrisSettingRow } from '../features/ferris';
 
 export const SOLUTION_LABEL: Record<SolutionPolicy, string> = { after3: 'After 3 failed checks', afterPass: 'Only after you pass', never: 'Never' };
 const THEMES: { id: ThemePref; label: string }[] = [{ id: 'dark', label: 'Dark' }, { id: 'paper', label: 'Paper' }, { id: 'system', label: 'System' }];
@@ -176,6 +177,7 @@ export default function SettingsScreen(_: ScreenProps) {
           <SRow line title="Show the official solution" sub={SOLUTION_LABEL[prefs.solution]} onPress={() => pop('solution-setting')} />
           <SRow line title="Quizzes from Brown’s edition" sub="Questions inside Book sections" onPress={() => setPrefs({ quizzes: !prefs.quizzes })}
             right={<Switch value={prefs.quizzes} onChange={(v) => setPrefs({ quizzes: v })} />} />
+          <FerrisSettingRow line />
         </Group>
 
         <GroupLabel>EDITOR AND TERMINAL</GroupLabel>

@@ -26,6 +26,7 @@ import { Success, type SuccessInfo } from './workspace/Success';
 import { FerrisBubble } from '../features/ferris';
 import { checkReaction } from '../features/ferris/react';
 import { fmtRunTime, SpeedRunResult, SpeedTimer, useSpeedrun, type SpeedResult } from '../features/speedrun';
+import { recordPass } from '../features/journal';
 
 type Tab = 'out' | 'explain' | 'hints' | 'solution';
 type Status = 'idle' | 'compiling' | 'pass' | 'error' | 'panic' | 'unavailable' | 'ran' | 'runfail';
@@ -211,6 +212,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
       const s0 = useApp.getState();
       const xpBefore = s0.xp;
       const earned = s0.passExercise(name, ex.xp, [...seenCodes.current]);
+      recordPass(name, latest.current);
       const s1 = useApp.getState();
       const passed = r.lines.map(plain).join('\n').match(/(\d+) passed/);
       setTimeout(() => setSuccess(successInfo(s1, { xpBefore, earned, passed: passed ? Number(passed[1]) : meta.tests })), 850);

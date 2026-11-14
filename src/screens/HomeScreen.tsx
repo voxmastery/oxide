@@ -15,6 +15,10 @@ import { comma, fmtDay, greeting, initialOf } from './home/format';
 import { roadmap } from './home/roadmap';
 import { Heatmap } from './home/Heatmap';
 import type { ScreenProps } from './registry';
+import { FreezeNotice, RescueCard } from '../features/streak';
+import { ReviewCard } from '../features/review';
+import { BugHuntCard } from '../features/bughunt';
+import { LeagueCard } from '../features/league';
 
 type StepView = {
   key: string;
@@ -168,6 +172,11 @@ export default function HomeScreen(_: ScreenProps) {
         </Press>
       </Row>
 
+      {/* Streak safety and reviews (each renders nothing when it doesn't apply) */}
+      <FreezeNotice />
+      <RescueCard />
+      <ReviewCard />
+
       {/* Level */}
       <Press onPress={() => pop('xp')} overlay={null} pressedStyle={{ backgroundColor: C.s3 }} accessibilityRole="button" accessibilityLabel={`Level ${lv.level}`}
         style={{ gap: 10, paddingTop: 14, paddingHorizontal: 16, paddingBottom: 16, borderRadius: 18, backgroundColor: C.s1 }}>
@@ -201,6 +210,10 @@ export default function HomeScreen(_: ScreenProps) {
         <TrackCard icon="data_object" label="Rustlings" big={String(rl.done)} of={`of ${rl.total}`} frac={rl.frac} color={C.done}
           sub={rl.next ? `next: ${rl.next}` : 'all done'} onPress={() => tab('practice')} />
       </Row>
+
+      {/* Daily Bug Hunt and this week's league */}
+      <BugHuntCard />
+      <LeagueCard />
 
       {/* Roadmap */}
       <View style={{ gap: 14, padding: 16, borderRadius: 18, backgroundColor: C.s1 }}>

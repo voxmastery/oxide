@@ -10,6 +10,8 @@ import { weeksForGoal } from '../state/selectors';
 import { scheduleReminder } from '../state/reminders';
 import type { OverlayProps } from './registry';
 import { ConfirmDialog, DialogFrame, OR, RED, RadioDot, TextAction } from './parts';
+import { resetBadges } from '../features/badges';
+import { resetJournal } from '../features/journal';
 
 // ---------- Radio dialogs ----------
 
@@ -182,6 +184,8 @@ export function DeleteAccountDialog(_: OverlayProps) {
           label: 'Delete account', color: RED, onPress: () => {
             scheduleReminder(null).catch(() => {});
             useApp.getState().deleteAccount();
+            resetBadges();
+            resetJournal();
             reset('onboarding', { variant: 'welcome' });
           },
         },

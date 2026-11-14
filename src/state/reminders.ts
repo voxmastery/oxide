@@ -6,6 +6,7 @@ import * as Notifications from 'expo-notifications';
 import { useApp, type AppData } from './app';
 import { rustlingsProgress, streak } from './selectors';
 import { sectionById } from '../content';
+import { rescueReminderText } from '../features/streak/rescue';
 
 const ID = 'oxide-daily-reminder';
 const CHANNEL = 'reminders';
@@ -14,7 +15,7 @@ const supported = Platform.OS === 'android' || Platform.OS === 'ios';
 /** Notification body from the user's state: the streak at risk, else where to pick up. */
 export function reminderBody(s: Pick<AppData, 'days' | 'bestStreak' | 'ex' | 'book'>): string {
   const n = streak(s).current;
-  if (n > 0) return `Your ${n}-day streak ends at midnight`;
+  if (n > 0) return rescueReminderText(s, useApp.getState().plan.reminderTime) ?? `Your ${n}-day streak ends at midnight`;
   const rl = rustlingsProgress(s);
   if (rl.done > 0 && rl.next) return `Pick up at ${rl.next}`;
   const sec = sectionById(s.book.current);

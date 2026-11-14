@@ -13,6 +13,8 @@ import { OverlayHost } from '../overlays/OverlayHost';
 import { useNet } from './net';
 import { useApp } from '../state/app';
 import { useCelebrations } from '../overlays/useCelebrations';
+import { BadgeWatcher } from '../features/badges';
+import { useStreakToasts } from '../features/streak';
 
 /** On web we draw the prototype's device chrome so screenshots match the design 1:1. */
 export const FRAME = Platform.OS === 'web';
@@ -113,6 +115,7 @@ export function Shell() {
   const insets = useSafeAreaInsets();
   const kb = useKeyboardInset();
   useCelebrations();
+  useStreakToasts();
   const top = stack[stack.length - 1];
 
   // First run: start in onboarding until the plan is set.
@@ -149,6 +152,7 @@ export function Shell() {
         <Screen key={top.key} entry={top} />
       </View>
       {showNav ? <NavBar /> : null}
+      <BadgeWatcher />
       <View style={{ height: gestureH, backgroundColor: bottomBg, alignItems: 'center', justifyContent: 'center' }}>
         {FRAME ? <View style={{ width: 108, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.42)' }} /> : null}
       </View>

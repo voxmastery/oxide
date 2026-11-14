@@ -3,6 +3,7 @@
 // compiling and running go to `getToolchain().spawn` and stream their output verbatim.
 import { Platform } from 'react-native';
 import * as fs from '../../fs';
+import { awardBadge } from '../../features/badges';
 import { errors, rustlings } from '../../content';
 import { getToolchain } from '../../toolchain';
 import type { Proc, ProcEvent, ToolchainInfo } from '../../toolchain/types';
@@ -671,6 +672,7 @@ async function spawnCmd(id: number, argv: string[], t0: number, needsRust = true
         useTerm.setState({ proc: null });
         term.finish(id, [], e.code, { dur: fmtDur(e.durationMs || Date.now() - t0), err: e.code ? errCode ?? undefined : undefined });
         if (isCargoRun && e.code === 0 && sawHello) helloRan();
+        if (argv[0] === 'cargo' && argv[1] === 'install' && e.code === 0) awardBadge('cargo-install');
         resolve(e.code);
         return;
       }

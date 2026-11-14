@@ -15,6 +15,7 @@ import { comma, initialOf, sinceLine } from './home/format';
 import { WeekDots } from './profile/WeekDots';
 import { bookProjectsMade, useProjects } from './profile/useProjects';
 import type { ScreenProps } from './registry';
+import { BadgesRow } from '../features/badges';
 
 function ProgressRow({ icon, label, val, frac, color, onPress }: { icon: string; label: string; val: string; frac: number; color: string; onPress: () => void }) {
   return (
@@ -110,12 +111,22 @@ export default function ProfileScreen(_: ScreenProps) {
         <ProgressRow icon="folder_code" label="Book projects" val={`${proj.made} of ${proj.total}`} frac={proj.made / Math.max(1, proj.total)} color={C.checkpoint} onPress={() => tab('terminal')} />
       </View>
 
+      {/* Badges */}
+      <BadgesRow />
+
       {/* Errors you've fixed */}
       <View style={{ paddingTop: 16, paddingHorizontal: 8, paddingBottom: 8, borderRadius: 18, backgroundColor: C.s1, gap: 4 }}>
         <Row style={{ alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: 8, paddingBottom: 6 }}>
           <SectionLabel>ERRORS YOU’VE FIXED</SectionLabel>
           {fixes ? <Text style={m(12, undefined, 500, C.tertiary)}>{`${fixes} ${fixes === 1 ? 'fix' : 'fixes'}`}</Text> : null}
         </Row>
+        <Press onPress={() => nav('collection')} overlay="rgba(255,255,255,0.04)" radius={12} accessibilityRole="button" accessibilityLabel="Error collection"
+          style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 8, borderRadius: 12 }}>
+          <Icon name="collections_bookmark" size={22} color={C.rustLight} />
+          <Text style={t(14.5, 1.35, 600, C.text, { flex: 1 })}>Error collection</Text>
+          <Text style={t(13, undefined, 500, C.rustLight)}>See all</Text>
+          <Icon name="chevron_right" size={20} color={C.disabled} />
+        </Press>
         {fixed.length === 0 ? (
           <Text style={t(14, 1.5, 400, C.secondary, { marginHorizontal: 8, marginBottom: 8 })}>When you fix a compiler error, it shows up here. Tap one to read what it means.</Text>
         ) : null}
@@ -130,6 +141,17 @@ export default function ProfileScreen(_: ScreenProps) {
           </Press>
         ))}
       </View>
+
+      {/* Code journal */}
+      <Press onPress={() => nav('journal')} overlay="rgba(255,255,255,0.04)" radius={18} accessibilityRole="button" accessibilityLabel="Code journal"
+        style={{ minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, borderRadius: 18, backgroundColor: C.s1 }}>
+        <Icon name="history_edu" size={24} color={C.done} />
+        <View style={{ flex: 1 }}>
+          <Text style={t(15, 1.3, 600, C.text)}>Code journal</Text>
+          <Text style={t(13, 1.4, 400, C.secondary)}>Every program you’ve passed, then and now</Text>
+        </View>
+        <Icon name="chevron_right" size={20} color={C.disabled} />
+      </Press>
     </ScrollView>
   );
 }

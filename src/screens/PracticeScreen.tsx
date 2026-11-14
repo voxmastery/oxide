@@ -14,6 +14,7 @@ import { projects, rustlings, toc, type RustlingsPathNode } from '../content';
 import { listProjects, useFsVersion } from '../fs';
 import type { ScreenProps } from './registry';
 import { CURATED } from './workspace/curated';
+import { BuildAlongCard } from '../features/buildalong';
 
 type BookState = 'read' | 'reading' | 'partly' | 'unread';
 const BS: Record<BookState, [string, string, string]> = {
@@ -228,6 +229,8 @@ export default function PracticeScreen(_: ScreenProps) {
           );
         })}
       </View>
+
+      <BuildAlongCard />
 
       <Text style={t(12.5, 1.55, 400, C.tertiary, { marginTop: 4, marginHorizontal: 24 })}>
         Exercises, hints and solutions from Rustlings (MIT), in Rustlings’ order. The § tags come from its exercise-to-chapter map.
