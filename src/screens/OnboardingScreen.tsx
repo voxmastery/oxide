@@ -147,8 +147,9 @@ export default function OnboardingScreen({ entry }: ScreenProps) {
     if (!isValidEmail(email)) return;
     const addr = email.trim();
     const r = await sendMagicLink(addr);
-    if (!r.ok && r.reason === 'invalid-email') { navActions().showToast(r.message); return; }
-    // No auth backend yet (state/auth.ts): keep the address on this phone and show the confirmation.
+    // Only claim "we sent a link" when a link was actually sent. Without an auth backend
+    // (state/auth.ts) sendMagicLink reports not-configured, and we say so instead.
+    if (!r.ok) { navActions().showToast(r.message); return; }
     useApp.getState().setUser({ email: addr });
     setSent(true);
   };
