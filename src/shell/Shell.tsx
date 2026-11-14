@@ -1,7 +1,7 @@
 // The phone frame from design/project/OxidePhone.dc.html: status bar, offline banner, content,
 // navigation bar, gesture bar, snackbar and the popup layer.
 import React, { useEffect } from 'react';
-import { BackHandler, Platform, Text, View } from 'react-native';
+import { BackHandler, Dimensions, Keyboard, Platform, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../theme/tokens';
 import { t } from '../theme/fonts';
@@ -87,12 +87,31 @@ function OfflineBanner() {
   );
 }
 
+/**
+ * Height of the on-screen keyboard over the app. With Android edge-to-edge (always on in this SDK)
+ * the window no longer resizes for the keyboard, so the shell makes room itself.
+ */
+function useKeyboardInset() {
+  const [h, setH] = React.useState(0);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (e) => {
+      const screenH = Dimensions.get('screen').height;
+      setH(Math.max(0, screenH - e.endCoordinates.screenY));
+    });
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setH(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+  return h;
+}
+
 export function Shell() {
   const stack = useNav((s) => s.stack);
   const popup = useNav((s) => s.popup);
   const onboarded = useApp((s) => s.onboarded);
   const offline = useNet((s) => s.offline);
   const insets = useSafeAreaInsets();
+  const kb = useKeyboardInset();
   useCelebrations();
   const top = stack[stack.length - 1];
 
@@ -115,11 +134,11 @@ export function Shell() {
     return () => sub.remove();
   }, []);
 
-  const showNav = TAB_ROOTS.includes(top.screen);
+  const showNav = TAB_ROOTS.includes(top.screen) && kb === 0;
   const Screen = SCREENS[top.screen];
   const bottomBg = showNav || top.screen === 'workspace' ? C.bar : C.ground;
   const statusH = FRAME ? 36 : insets.top;
-  const gestureH = FRAME ? 22 : insets.bottom;
+  const gestureH = FRAME ? 22 : kb > 0 ? kb : insets.bottom;
   const full = popup && FULL_POPUPS.includes(popup.kind);
 
   return (
