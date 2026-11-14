@@ -45,7 +45,7 @@ export type Inline =
 export type Block =
   | { type: 'h2' | 'h3' | 'h4'; text: Inline[]; anchor: string }
   | { type: 'p'; text: Inline[] }
-  | { type: 'ul' | 'ol'; items: Inline[][] }
+  | { type: 'ul' | 'ol'; items: Inline[][]; /** ol only: first number when a list was split around a code block. */ start?: number }
   | { type: 'note'; kind: 'note' | 'warning'; blocks: Block[] }
   | { type: 'quote'; blocks: Block[] }
   | {
@@ -166,6 +166,8 @@ export type BookProject = {
   files: Record<string, string>;
   /** Vendored crates the project needs offline (e.g. rand for guessing_game). */
   crates: string[];
+  /** Book listing directory the files were taken from, e.g. "listings/ch12-an-io-project/listing-12-24". */
+  sourceDir?: string;
 };
 
 export type SearchEntry = {
@@ -175,4 +177,13 @@ export type SearchEntry = {
   subtitle: string;
   /** Extra terms matched but not shown. */
   terms?: string;
+};
+
+/** Upstream license texts bundled for Settings → About → Content licenses. */
+export type ContentLicense = {
+  source: 'book' | 'rustlings' | 'brown' | 'rustc';
+  name: string;          // "The Rust Programming Language"
+  license: string;       // "MIT OR Apache-2.0"
+  file: string;          // "LICENSE-MIT"
+  text: string;
 };
