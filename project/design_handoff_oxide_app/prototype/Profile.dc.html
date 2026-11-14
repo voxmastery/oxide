@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&display=block" rel="stylesheet">
+<script src="oxide-lib.js"></script>
+<style>body{margin:0}a{color:#FF8A55}a:hover{color:#FFA070}</style>
+</helmet>
+<div style="height:100%;overflow-y:auto;background:#0F0E0E;font-family:'Public Sans',sans-serif;color:#ECE8E3;scrollbar-width:none">
+  <div style="display:flex;flex-direction:column;gap:14px;padding:0 16px 28px">
+    <div style="height:64px;display:flex;align-items:center;gap:4px;padding:4px 0 0 4px">
+      <span style="flex:1;font-size:24px;font-weight:650;letter-spacing:-0.02em">Profile</span>
+      <button onClick="{{ toSettings }}" title="Settings" style="width:48px;height:48px;border:0;border-radius:24px;background:none;color:#D9D3CC;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">settings</span></button>
+    </div>
+
+    <div onClick="{{ openXp }}" style="padding:18px;border-radius:24px;background:#1A1918;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;gap:16px;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:56px;height:56px;flex:none;border-radius:28px;background:#2C2A28;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600">S</div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:20px;font-weight:650;letter-spacing:-0.01em">Sam</span><span style="font-size:13px;color:#A39C95">{{ p.since }}</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px"><span style="height:24px;padding:0 8px;border-radius:6px;background:rgba(247,76,0,0.16);color:#FF8A55;font:600 12.5px/24px 'JetBrains Mono',monospace">Lv {{ p.lv }}</span><span style="flex:1;min-width:0;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.title }}</span></div>
+        <div style="height:6px;border-radius:3px;background:#2C2A28;overflow:hidden"><div style="height:100%;width:{{ p.pct }}%;border-radius:3px;background:#F74C00"></div></div>
+        <div style="display:flex;justify-content:space-between;gap:8px;font:500 12px 'JetBrains Mono',monospace;color:#A39C95"><span>{{ p.xp }}</span><span>{{ p.next }}</span></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+      <div onClick="{{ openStreak }}" style="padding:14px;border-radius:18px;background:#171615;display:flex;flex-direction:column;gap:10px;min-width:0;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:{{ p.flame }};font-variation-settings:'FILL' 1">local_fire_department</span><span style="font-size:13.5px;font-weight:600">Streak</span></div>
+        <div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 28px/1 'JetBrains Mono',monospace">{{ p.streak }}</span><span style="font-size:13px;color:#A39C95">days</span></div>
+        <span style="font-size:12.5px;line-height:1.35;color:#8C867F">{{ p.best }}</span>
+      </div>
+      <div style="padding:14px;border-radius:18px;background:#171615;display:flex;flex-direction:column;gap:10px;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:#D9D3CC">timer</span><span style="font-size:13.5px;font-weight:600">Daily goal</span></div>
+        <div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 28px/1 'JetBrains Mono',monospace">30</span><span style="font-size:13px;color:#A39C95">min</span></div>
+        <div style="display:flex;justify-content:space-between">
+          <sc-for list="{{ week }}" as="w" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:7px;background:{{ w.bg }};box-shadow:{{ w.ring }}"></span><span style="font:500 10px 'JetBrains Mono',monospace;color:{{ w.c }}">{{ w.d }}</span></div></sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:16px 16px 10px;border-radius:18px;background:#171615;display:flex;flex-direction:column;gap:6px">
+      <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">PROGRESS</span>
+      <sc-for list="{{ prog }}" as="r" hint-placeholder-count="3">
+        <button onClick="{{ r.go }}" style="min-height:56px;display:flex;flex-direction:column;justify-content:center;gap:8px;border:0;background:none;color:#ECE8E3;padding:6px 0;cursor:pointer;text-align:left">
+          <div style="display:flex;align-items:center;gap:10px"><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:{{ r.c }}">{{ r.icon }}</span><span style="flex:1;font-size:14.5px;font-weight:600">{{ r.label }}</span><span style="font:500 12px 'JetBrains Mono',monospace;color:#A39C95">{{ r.val }}</span></div>
+          <div style="height:4px;border-radius:2px;background:#2C2A28;overflow:hidden"><div style="height:100%;width:{{ r.pct }}%;border-radius:2px;background:{{ r.c }}"></div></div>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="padding:16px 8px 8px;border-radius:18px;background:#171615;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 8px 6px"><span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">ERRORS YOU’VE FIXED</span><span style="font:500 12px 'JetBrains Mono',monospace;color:#8C867F">{{ errCount }}</span></div>
+      <sc-if value="{{ errEmpty }}" hint-placeholder-val="{{ false }}"><p style="margin:0 8px 8px;font-size:14px;line-height:1.5;color:#A39C95;text-wrap:pretty">When you fix a compiler error, it shows up here. Tap one to read what it means.</p></sc-if>
+      <sc-for list="{{ errs }}" as="e" hint-placeholder-count="4">
+        <button onClick="{{ e.go }}" style="min-height:56px;display:flex;align-items:center;gap:12px;padding:8px;border:0;border-radius:12px;background:none;color:#ECE8E3;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,0.04)">
+          <span style="flex:none;height:24px;padding:0 7px;border-radius:6px;background:rgba(255,107,118,0.12);color:#FF8F98;font:600 12px/24px 'JetBrains Mono',monospace">{{ e.code }}</span>
+          <span style="flex:1;min-width:0;font-size:14px;line-height:1.35;color:#D9D3CC">{{ e.t }}</span>
+          <span style="font:500 12.5px 'JetBrains Mono',monospace;color:#A39C95">×{{ e.n }}</span>
+          <span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:#6E6862">chevron_right</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { ready: !!window.OxLib };
+  componentDidMount() { if (!window.OxLib) { this._h = () => this.setState({ ready: true }); window.addEventListener('oxlib-ready', this._h); } }
+  componentWillUnmount() { if (this._h) window.removeEventListener('oxlib-ready', this._h); }
+  renderVals() {
+    const L = window.OxLib, fresh = this.props.fresh === true || this.props.fresh === 'true';
+    const nav = (s, o) => this.props.nav && this.props.nav(s, o), tab = (t) => this.props.tab && this.props.tab(t);
+    const p = fresh
+      ? { since: 'Joined today', lv: 1, title: 'Hello, World', pct: 0, xp: '0 / 300 XP', next: '300 XP to Lv 2', streak: 0, best: 'Starts when you finish today’s mission', flame: '#6E6862' }
+      : { since: 'Learning Rust since July', lv: 7, title: 'Borrow Checker Apprentice', pct: 76.7, xp: '1,840 / 2,400 XP', next: '560 XP to Lv 8', streak: 12, best: 'Best: 19 days', flame: '#FF7A3D' };
+    const week = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => {
+      const today = i === 5, done = !fresh && i < 5;
+      return { k: i, d, c: today ? '#ECE8E3' : '#8C867F', bg: done ? '#57D6C8' : today && !fresh ? 'conic-gradient(#F74C00 0 93%, transparent 93% 100%)' : 'transparent', ring: today ? 'inset 0 0 0 2px #F74C00' : done ? 'none' : 'inset 0 0 0 1.5px #3A3735' };
+    });
+    const prog = [
+      { k: 'b', icon: 'menu_book', label: 'The Book', val: fresh ? '1 of 80 sections' : '10 of 80 sections', pct: fresh ? 1.25 : 12.5, c: '#F74C00', go: () => tab('learn') },
+      { k: 'r', icon: 'data_object', label: 'Rustlings', val: fresh ? '0 of 95 exercises' : '26 of 95 exercises', pct: fresh ? 0 : 27.4, c: '#57D6C8', go: () => tab('practice') },
+      { k: 'p', icon: 'folder_code', label: 'Book projects', val: fresh ? '0 of 3' : '1 of 3', pct: fresh ? 0 : 33.3, c: '#F2C25B', go: () => tab('terminal') }
+    ];
+    const E = fresh ? [] : [['E0308', 9], ['E0382', 7], ['E0425', 4], ['E0499', 3], ['E0596', 2]];
+    const errs = L && L.ERRS ? E.map(([code, n]) => ({ k: code, code, n, t: L.ERRS[code].t, go: () => nav('terminal', { variant: 'cmd', arg: 'rustc --explain ' + code }) })) : [];
+    return { p, week, prog, errs, errEmpty: fresh, errCount: fresh ? '' : '25 fixes', toSettings: () => nav('settings'), openStreak: () => this.props.pop && this.props.pop('streak', { fresh }), openXp: () => this.props.pop && this.props.pop('xp', { fresh }) };
+  }
+}
+</script>
+</body>
+</html>

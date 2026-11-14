@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&display=block" rel="stylesheet">
+<script src="oxide-lib.js"></script>
+<style>body{margin:0}a{color:#FF8A55}a:hover{color:#FFA070}</style>
+</helmet>
+<div style="height:100%;overflow-y:auto;background:#0F0E0E;font-family:'Public Sans',sans-serif;color:#ECE8E3;scrollbar-width:none">
+  <div style="display:flex;flex-direction:column;gap:14px;padding:0 0 28px">
+    <div style="height:64px;display:flex;align-items:center;gap:4px;padding:4px 8px 0 20px">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:24px;font-weight:650;letter-spacing:-0.02em">The Book</span>
+        <span style="font-size:12.5px;color:#A39C95">The Rust Programming Language</span>
+      </div>
+      <button onClick="{{ search }}" title="Search the Book" style="width:48px;height:48px;border:0;border-radius:24px;background:none;color:#D9D3CC;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">search</span></button>
+    </div>
+
+    <div style="margin:0 16px;padding:16px;border-radius:24px;background:#1A1918;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">CONTINUE READING</span>
+        <span style="font:500 12px 'JetBrains Mono',monospace;color:#FF8A55">{{ cont.pct }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span style="font-size:20px;line-height:1.25;font-weight:650;letter-spacing:-0.01em">{{ cont.title }}</span>
+        <span style="font-size:13px;color:#A39C95">{{ cont.sub }}</span>
+      </div>
+      <div style="height:4px;border-radius:2px;background:#2C2A28;overflow:hidden"><div style="width:{{ cont.w }}%;height:100%;border-radius:2px;background:#F74C00"></div></div>
+      <button onClick="{{ cont.go2 }}" style="display:flex;align-items:center;gap:10px;padding:10px 8px 10px 12px;border:0;border-radius:14px;background:#211F1E;color:#ECE8E3;cursor:pointer;text-align:left" style-hover="background:#262422">
+        <span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:{{ cont.c2 }}">{{ cont.icon2 }}</span>
+        <span style="flex:1;min-width:0;font-size:13.5px;line-height:1.35;color:#D9D3CC">{{ cont.a }}<span style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#ECE8E3">{{ cont.b }}</span>{{ cont.c }}</span>
+        <span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:#8C867F">chevron_right</span>
+      </button>
+      <button onClick="{{ resume }}" style="height:52px;border:0;border-radius:26px;background:#F74C00;color:#1A0B04;font:650 16px 'Public Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:#FF5A10">{{ cont.btn }}<span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden">arrow_forward</span></button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;padding:8px 20px 0">
+      <div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">CONTENTS</span><span style="font:500 12px 'JetBrains Mono',monospace;color:#8C867F">{{ stats }}</span></div>
+      <div style="display:flex;gap:2px;height:6px"><sc-for list="{{ strip }}" as="s" hint-placeholder-count="21"><div style="flex:{{ s.n }} 1 0;min-width:2px;border-radius:2px;background:{{ s.bg }}"></div></sc-for></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;padding:0 8px">
+      <sc-for list="{{ chapters }}" as="c" hint-placeholder-count="8">
+        <div style="display:flex;flex-direction:column;border-radius:18px;background:{{ c.bg }};margin-bottom:2px">
+          <button onClick="{{ c.toggle }}" style="min-height:64px;display:flex;align-items:center;gap:14px;padding:10px 12px 10px 14px;border:0;background:none;color:#ECE8E3;cursor:pointer;text-align:left;border-radius:18px" style-hover="background:rgba(255,255,255,0.03)">
+            <div style="width:36px;height:36px;flex:none;border-radius:18px;background:{{ c.ring }};display:flex;align-items:center;justify-content:center"><div style="width:30px;height:30px;border-radius:15px;background:{{ c.inner }};display:flex;align-items:center;justify-content:center;font:600 11.5px 'JetBrains Mono',monospace;color:{{ c.nc }}">{{ c.label }}</div></div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:15px;font-weight:600;line-height:1.3;color:{{ c.tc }};text-wrap:pretty">{{ c.title }}</span>
+              <span style="font:400 11.5px 'JetBrains Mono',monospace;color:{{ c.sc }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.sub }}</span>
+            </div>
+            <span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden;color:#8C867F">{{ c.chev }}</span>
+          </button>
+          <sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;padding:0 6px 8px">
+              <sc-for list="{{ c.secs }}" as="s">
+                <button onClick="{{ s.onTap }}" style="min-height:56px;display:flex;align-items:center;gap:14px;padding:8px 10px 8px 14px;border:0;border-radius:12px;background:{{ s.bg }};color:#ECE8E3;cursor:{{ s.cur }};text-align:left" style-hover="background:rgba(255,255,255,0.04)">
+                  <span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;flex:none;overflow:hidden;color:{{ s.ic }};font-variation-settings:{{ s.fill }}">{{ s.icon }}</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="font-size:14.5px;line-height:1.35;color:{{ s.tc }}"><span style="font:500 12.5px 'JetBrains Mono',monospace;color:#8C867F">{{ s.id }}</span> {{ s.title }}</span>
+                    <sc-if value="{{ s.rl }}" hint-placeholder-val="{{ false }}"><span style="font:400 11.5px 'JetBrains Mono',monospace;color:#57D6C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.rl }}</span></sc-if>
+                  </div>
+                  <span style="font:500 12px 'JetBrains Mono',monospace;color:#FF8A55">{{ s.meta }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <p style="margin:6px 24px 0;font-size:12.5px;line-height:1.55;color:#8C867F;text-wrap:pretty">The Rust Programming Language, from the Rust project, MIT or Apache-2.0. Rustlings links follow Rustlings’ own exercise-to-chapter map.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { open: (this.props.fresh === true || this.props.fresh === 'true') ? 1 : 4, ready: !!window.OxLib };
+  componentDidMount() { if (!window.OxLib) { this._h = () => this.setState({ ready: true }); window.addEventListener('oxlib-ready', this._h); } }
+  componentWillUnmount() { if (this._h) window.removeEventListener('oxlib-ready', this._h); }
+  renderVals() {
+    const L = window.OxLib, S = this.state;
+    const nav = (s, o) => this.props.nav && this.props.nav(s, o), tab = (t) => this.props.tab && this.props.tab(t);
+    const fresh = this.props.fresh === true || this.props.fresh === 'true';
+    const cont = fresh
+      ? { pct: '0%', w: 0, title: '1.2 Hello, World!', sub: 'Getting Started · 8 min', a: 'Then run it in the Terminal: ', b: 'hello_world', c: '', icon2: 'terminal', c2: '#FF8A55', go2: () => tab('terminal'), btn: 'Start reading' }
+      : { pct: '62%', w: 62, title: '4.2 References and Borrowing', sub: 'Understanding Ownership · 6 min left', a: 'Drill it in Rustlings: ', b: 'move_semantics', c: ' · 1 of 5', icon2: 'data_object', c2: '#57D6C8', go2: () => tab('practice'), btn: 'Resume reading' };
+    const base = { cont, search: () => nav('search'), resume: () => fresh ? nav('reader', { arg: '1.2' }) : nav('reader', { variant: 'resume' }), toPractice: () => tab('practice') };
+    if (!L || !L.BOOK_TOC) return Object.assign(base, { chapters: [], strip: [], stats: '' });
+    const B = fresh ? { read: ['1.1'], cur: '1.2', curPct: 0 } : L.BOOK_STATE, READ = new Set(B.read), byCh = {}, bySec = {}, whole = {};
+    const add = (m, k, p) => { m[k] = m[k] || []; if (m[k].indexOf(p) < 0) m[k].push(p); };
+    L.RL.path.forEach(p => (p.secs || []).forEach(sec => {
+      const ch = sec === 'D' ? 'A' : sec.split('.')[0], id = sec === 'D' ? 'A.4' : sec;
+      add(byCh, ch, p);
+      if (id.indexOf('.') < 0) add(whole, ch, p); else add(bySec, id, p);
+    }));
+    const tag = (p) => p.name + ' ' + (fresh ? 0 : p.done) + '/' + p.n;
+    let total = 0, got = 0;
+    const strip = [];
+    const chapters = L.BOOK_TOC.map(c => {
+      const app = c.n === 'A', ids = c.s.length ? c.s.map((_, i) => c.n + '.' + (i + 1)) : [String(c.n)];
+      const g = ids.reduce((a, id) => a + (READ.has(id) ? 1 : id === B.cur ? B.curPct : 0), 0), pct = g / ids.length;
+      const st = pct >= 1 ? 'done' : pct > 0 ? 'cur' : 'todo', deg = Math.round(pct * 100), open = S.open === c.n;
+      if (!app) { total += ids.length; got += g; strip.push({ k: c.n, n: ids.length, bg: st === 'done' ? '#57D6C8' : st === 'cur' ? 'linear-gradient(90deg,#F74C00 0 ' + deg + '%,#3A3735 ' + deg + '% 100%)' : '#2C2A28' }); }
+      const tps = byCh[String(c.n)] || [];
+      const sub = c.project ? 'Project · ' + c.project : tps.length ? 'Rustlings · ' + tps.map(tag).join(' · ') : ids.length + (ids.length === 1 ? ' section' : ' sections');
+      const rowBg = open ? '#171615' : '#0F0E0E';
+      return {
+        k: c.n, title: c.t, label: app ? 'A' : String(c.n).padStart(2, '0'), sub,
+        sc: c.project ? '#D9D3CC' : tps.length ? '#A39C95' : '#6E6862',
+        ring: st === 'done' ? '#57D6C8' : st === 'cur' ? 'conic-gradient(#F74C00 0 ' + deg + '%, #3A3735 ' + deg + '% 100%)' : '#2C2A28',
+        inner: st === 'done' ? '#57D6C8' : rowBg, nc: st === 'done' ? '#06201C' : st === 'cur' ? '#FF8A55' : '#8C867F',
+        tc: st === 'todo' ? '#D9D3CC' : '#ECE8E3', bg: open ? '#171615' : 'transparent', open, chev: open ? 'expand_less' : 'expand_more',
+        toggle: () => this.setState(s => ({ open: s.open === c.n ? null : c.n })),
+        secs: !open ? [] : ids.map((id, i) => {
+          const sst = READ.has(id) ? 'done' : id === B.cur ? 'cur' : 'todo', isCur = sst === 'cur';
+          const tp = (bySec[id] || []).concat((whole[String(c.n)] || []).filter(p => (bySec[id] || []).indexOf(p) < 0));
+          return {
+            k: id, id: c.s.length && !app ? id : '', title: c.s.length ? c.s[i] : c.t,
+            rl: tp.length ? 'Rustlings · ' + tp.map(tag).join(' · ') : '',
+            icon: sst === 'done' ? 'check_circle' : isCur ? 'timelapse' : 'radio_button_unchecked',
+            ic: sst === 'done' ? '#57D6C8' : isCur ? '#FF8A55' : '#5C5752', fill: sst === 'done' ? "'FILL' 1" : "'FILL' 0",
+            tc: sst === 'todo' ? '#C9C2BA' : '#ECE8E3', meta: isCur ? Math.round(B.curPct * 100) + '%' : '',
+            bg: isCur ? 'rgba(247,76,0,0.08)' : 'transparent', cur: isCur ? 'pointer' : 'default',
+            onTap: isCur ? base.resume : () => {}
+          };
+        })
+      };
+    });
+    return Object.assign(base, { chapters, strip, stats: Math.floor(got) + ' of ' + total + ' sections' });
+  }
+}
+</script>
+</body>
+</html>

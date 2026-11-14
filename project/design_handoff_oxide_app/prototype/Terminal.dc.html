@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&display=block" rel="stylesheet">
+<script src="oxide-lib.js"></script>
+<style>body{margin:0}a{color:#FF8A55}a:hover{color:#FFA070}@keyframes ox-spin{to{transform:rotate(360deg)}}@keyframes ox-pulse{0%,100%{opacity:1}50%{opacity:.3}}input::placeholder{color:#6E6862}</style>
+</helmet>
+<div style="height:100%;display:flex;flex-direction:column;background:#0F0E0E;font-family:'Public Sans',sans-serif;color:#ECE8E3;position:relative;overflow:hidden">
+  <div style="height:64px;flex:none;display:flex;align-items:center;gap:2px;padding:4px 6px 0 6px">
+    <sc-if value="{{ head.back }}" hint-placeholder-val="{{ false }}"><button onClick="{{ goBack }}" style="width:48px;height:48px;flex:none;border:0;background:none;border-radius:24px;color:#ECE8E3;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">arrow_back</span></button></sc-if>
+    <button onClick="{{ openSheet }}" style="flex:1;min-width:0;height:52px;display:flex;align-items:center;gap:12px;padding:0 10px;border:0;border-radius:16px;background:none;color:#ECE8E3;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,0.04)">
+      <div style="width:36px;height:36px;flex:none;border-radius:11px;background:#1E1C1B;display:flex;align-items:center;justify-content:center"><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:#FF8A55">{{ head.icon }}</span></div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:2px;min-width:0"><span style="font:600 16px 'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ head.name }}</span><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;flex:none;overflow:hidden;color:#8C867F">expand_more</span></div>
+        <span style="font:400 11.5px 'JetBrains Mono',monospace;color:#8C867F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ head.path }}</span>
+      </div>
+    </button>
+    <button onClick="{{ clear }}" title="Clear the screen" style="width:48px;height:48px;flex:none;border:0;background:none;border-radius:24px;color:#D9D3CC;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">clear_all</span></button>
+  </div>
+
+  <sc-if value="{{ mission.on }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;margin:2px 12px 10px;padding:12px 14px 14px;border-radius:18px;background:#1A1918;box-shadow:inset 0 0 0 1px {{ mission.bd }};display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;min-height:20px">
+        <span style="flex:1;font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:0.08em;color:{{ mission.kc }}">{{ mission.kicker }}</span>
+        <sc-if value="{{ mission.done }}" hint-placeholder-val="{{ false }}"><button onClick="{{ goHome }}" style="height:40px;margin:-10px -6px -10px 0;padding:0 6px 0 12px;border:0;border-radius:20px;background:none;color:#57D6C8;font:600 13.5px 'Public Sans',sans-serif;display:flex;align-items:center;gap:2px;cursor:pointer">Home<span style="font:18px/1 'Material Symbols Outlined';width:18px;height:18px;overflow:hidden">chevron_right</span></button></sc-if>
+      </div>
+      <span style="font-size:15.5px;line-height:1.3;font-weight:600">{{ mission.title }}</span>
+      <span style="font-size:13px;line-height:1.45;color:#A39C95;text-wrap:pretty">{{ mission.sub }}</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:2px">
+        <sc-for list="{{ mission.steps }}" as="s" hint-placeholder-count="3"><span style="height:26px;padding:0 9px 0 6px;border-radius:8px;background:{{ s.bg }};display:flex;align-items:center;gap:5px;font:500 11.5px 'JetBrains Mono',monospace;color:{{ s.c }};white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined';width:16px;height:16px;overflow:hidden;font-variation-settings:{{ s.fill }}">{{ s.icon }}</span>{{ s.t }}</span></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div ref="{{ scRef }}" style="flex:1;min-height:0;overflow-y:auto;position:relative;scrollbar-width:none;box-shadow:inset 0 1px 0 #1C1A19">
+    <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="2">
+      <div data-blk="{{ b.id }}" style="padding:12px 16px 14px;box-shadow:inset 0 -1px 0 #1C1A19;display:flex;flex-direction:column;gap:8px">
+        <sc-if value="{{ b.hasCmd }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:8px;min-height:20px">
+            <span style="font:600 13.5px 'JetBrains Mono',monospace;color:#FF8A55">$</span>
+            <span style="flex:1;min-width:0;font:500 13.5px 'JetBrains Mono',monospace;color:#ECE8E3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.cmd }}</span>
+            {{ b.spin }}
+            <span style="font:500 11.5px 'JetBrains Mono',monospace;color:{{ b.mc }};white-space:nowrap">{{ b.meta }}</span>
+            <button onClick="{{ b.menu }}" title="More" style="width:40px;height:40px;margin:-10px -12px -10px -4px;flex:none;border:0;border-radius:20px;background:none;color:#6E6862;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.05)"><span style="font:18px/1 'Material Symbols Outlined';width:18px;height:18px;overflow:hidden">more_vert</span></button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ b.hasOut }}" hint-placeholder-val="{{ false }}">
+          <div style="overflow-x:auto;scrollbar-width:none;font:400 12px/18px 'JetBrains Mono',monospace;font-variant-ligatures:none;color:#E4E0DB">
+            <sc-for list="{{ b.lines }}" as="l"><div style="white-space:{{ l.ws }};width:{{ l.w }};min-height:18px;overflow-wrap:anywhere"><sc-for list="{{ l.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></div></sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ b.hasActs }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:2px">
+            <sc-for list="{{ b.acts }}" as="a"><button onClick="{{ a.onTap }}" style="height:40px;padding:0 14px 0 10px;border:0;border-radius:12px;background:#1E1C1B;box-shadow:inset 0 0 0 1px #2E2C2A;color:#ECE8E3;font:600 13px 'Public Sans',sans-serif;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap" style-hover="background:#262422"><span style="font:18px/1 'Material Symbols Outlined';width:18px;height:18px;overflow:hidden;color:{{ a.ic }}">{{ a.icon }}</span>{{ a.label }}</button></sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+    <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}"><div style="padding:32px 24px;font:400 12.5px/1.6 'JetBrains Mono',monospace;color:#6E6862;text-align:center">Screen cleared. Your history is still on ↑.</div></sc-if>
+  </div>
+
+  <div style="flex:none;background:#141312;box-shadow:inset 0 1px 0 #24221F;display:flex;flex-direction:column;gap:4px;padding:4px 0 10px">
+    <sc-if value="{{ procRow.on }}" hint-placeholder-val="{{ false }}">
+      <div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 8px 0 18px">
+        {{ procRow.pulse }}
+        <span style="flex:1;min-width:0;font:500 12.5px 'JetBrains Mono',monospace;color:#D9D3CC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ procRow.text }}</span>
+        <button onMouseDown="{{ keep }}" onClick="{{ ctrlC }}" style="height:36px;padding:0 12px;border:0;border-radius:10px;background:#2A2826;color:#ECE8E3;font:600 12.5px 'JetBrains Mono',monospace;cursor:pointer;white-space:nowrap" style-hover="background:#34312E">Stop ⌃C</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ chipsOn }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 12px">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4"><button onMouseDown="{{ keep }}" onClick="{{ c.onTap }}" style="flex:none;height:44px;padding:4px 0;border:0;background:none;cursor:pointer"><span style="height:36px;padding:0 12px;border-radius:10px;background:{{ c.bg }};box-shadow:inset 0 0 0 1px {{ c.bd }};color:{{ c.c }};font:500 12.5px 'JetBrains Mono',monospace;display:flex;align-items:center;white-space:nowrap">{{ c.t }}</span></button></sc-for>
+      </div>
+    </sc-if>
+    <div style="margin:0 12px;height:52px;border-radius:14px;background:#1E1C1B;box-shadow:inset 0 0 0 {{ inp.bw }} {{ inp.bc }};display:flex;align-items:center;gap:10px;padding:0 6px 0 14px">
+      <span style="font:600 15px 'JetBrains Mono',monospace;color:{{ inp.pc }}">{{ inp.prompt }}</span>
+      <input ref="{{ inRef }}" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" onFocus="{{ onFocus }}" onBlur="{{ onBlur }}" placeholder="{{ inp.ph }}" autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck="false" style="flex:1;min-width:0;height:100%;border:0;outline:none;background:transparent;color:#ECE8E3;font:400 15px 'JetBrains Mono',monospace;caret-color:#F74C00;padding:0">
+      <button onMouseDown="{{ keep }}" onClick="{{ submit }}" title="Run" style="width:40px;height:40px;flex:none;border:0;border-radius:11px;background:{{ inp.sb }};color:{{ inp.sc }};display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden">keyboard_return</span></button>
+    </div>
+    <sc-if value="{{ focus }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:2px 10px 0">
+        <sc-for list="{{ keys }}" as="x"><button onMouseDown="{{ keep }}" onClick="{{ x.onTap }}" style="flex:none;min-width:44px;height:44px;padding:0 10px;border:0;border-radius:10px;background:#1E1C1B;color:#D9D3CC;font:500 14px 'JetBrains Mono',monospace;cursor:pointer" style-hover="background:#262422">{{ x.t }}</button></sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ sheet.on }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSheet }}" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,9,9,0.62);z-index:10"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;z-index:11;max-height:86%;overflow-y:auto;scrollbar-width:none;background:#1A1918;border-radius:28px 28px 0 0;box-shadow:0 -1px 0 rgba(255,255,255,0.06);display:flex;flex-direction:column;padding:0 0 16px">
+      <div style="height:28px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:32px;height:4px;border-radius:2px;background:#4A4643"></div></div>
+      <div style="display:flex;align-items:center;padding:0 12px 8px 24px">
+        <span style="flex:1;font-size:20px;font-weight:650;letter-spacing:-0.01em">Projects</span>
+        <button onClick="{{ newProject }}" style="height:44px;padding:0 16px 0 12px;border:0;border-radius:22px;background:#2A2826;color:#ECE8E3;font:600 14px 'Public Sans',sans-serif;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#34312E"><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden">add</span>New project</button>
+      </div>
+      <sc-for list="{{ sheet.rows }}" as="r" hint-placeholder-count="4">
+        <button onClick="{{ r.onTap }}" style="min-height:64px;display:flex;align-items:center;gap:14px;padding:8px 20px 8px 24px;border:0;background:{{ r.bg }};color:#ECE8E3;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,0.04)">
+          <span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;flex:none;overflow:hidden;color:{{ r.ic }}">{{ r.icon }}</span>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+            <span style="font:500 15px 'JetBrains Mono',monospace;color:{{ r.tc }}">{{ r.name }}</span>
+            <span style="font-size:12.5px;color:#8C867F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span>
+          </div>
+          <span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;color:#FF8A55">{{ r.mark }}</span>
+        </button>
+      </sc-for>
+      <sc-if value="{{ sheet.hasBook }}" hint-placeholder-val="{{ false }}">
+        <span style="padding:14px 24px 6px;font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">FROM THE BOOK</span>
+        <sc-for list="{{ sheet.book }}" as="r">
+          <button onClick="{{ r.onTap }}" style="min-height:64px;display:flex;align-items:center;gap:14px;padding:8px 20px 8px 24px;border:0;background:none;color:#ECE8E3;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,0.04)">
+            <span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;flex:none;overflow:hidden;color:#8C867F">folder_code</span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="font:500 15px 'JetBrains Mono',monospace;color:#D9D3CC">{{ r.name }}</span>
+              <span style="font-size:12.5px;color:#8C867F">{{ r.sub }}</span>
+            </div>
+            <span style="font:500 12px 'JetBrains Mono',monospace;color:#8C867F;white-space:nowrap">cargo new</span>
+          </button>
+        </sc-for>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  scRef = React.createRef();
+  inRef = React.createRef();
+  _id = 0;
+  _tm = [];
+  state = { ready: !!window.OxLib, fs: null, cwd: '~', blocks: [], proc: null, mis: null, input: '', hist: [], hi: -1, focus: false, sheet: this.props.variant === 'projects' };
+  fresh() { return this.props.fresh === true || this.props.fresh === 'true'; }
+  componentDidMount() {
+    if (window.OxLib) this.start();
+    else { this._h = () => { this.setState({ ready: true }); this.start(); }; window.addEventListener('oxlib-ready', this._h); }
+  }
+  start() {
+    const C = this.props.sid && window.__oxTerm && window.__oxTerm[this.props.sid];
+    if (!C) return this.boot();
+    const pend = C.pending || (this.props.variant === 'cmd' && this.props.arg) || null, st = C.st;
+    C.pending = null; this._id = C._id;
+    const blocks = st.blocks.map(b => b.st === 'run' && !(st.proc && st.proc.id === b.id) ? Object.assign({}, b, { st: 'err', code: 130, lines: b.lines.concat(['^C']) }) : b);
+    this.setState(Object.assign({}, st, { blocks, sheet: false, input: '', focus: false }), () => { this.scroll(); this.runCmds(pend); });
+  }
+  runCmds(c) {
+    if (!c) return;
+    if (this.state.proc) this.ctrlC();
+    (Array.isArray(c) ? c : String(c).split(' && ')).forEach((x, i) => this.later(250 + i * 650, () => this.exec(x)));
+  }
+  componentWillUnmount() {
+    this._tm.forEach(clearTimeout); if (this._h) window.removeEventListener('oxlib-ready', this._h);
+    if (this.props.sid && this.state.fs) { const W = window.__oxTerm = window.__oxTerm || {}; W[this.props.sid] = { st: this.state, _id: this._id, pending: null }; }
+  }
+  componentDidUpdate(pp, ps) { if (ps.blocks !== this.state.blocks) this.scroll(); }
+  scroll() {
+    requestAnimationFrame(() => {
+      const el = this.scRef.current, B = this.state.blocks;
+      if (!el || !B.length) return;
+      const last = el.querySelector('[data-blk="' + B[B.length - 1].id + '"]'), max = el.scrollHeight - el.clientHeight;
+      el.scrollTop = this.state.proc || !last ? max : Math.min(max, last.offsetTop - 4);
+    });
+  }
+  st(w) { return '§G' + w.padStart(12) + '§n'; }
+  finished(prof, t) { return this.st('Finished') + ' `' + prof + '` profile [unoptimized + debuginfo] target(s) in ' + t; }
+  newOut(n) { return [this.st('Creating') + ' binary (application) `' + n + '` package', { t: '§Cnote§n: see more `Cargo.toml` keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html', w: 1 }]; }
+  gameLines(partial) {
+    const g = [this.finished('dev', '0.03s'), this.st('Running') + ' `target/debug/guessing_game`', 'Guess the number!', 'Please input your guess.'];
+    const turns = [[50, 'Too small!'], [75, 'Too big!'], [62, 'Too small!']].concat(partial ? [] : [[68, 'You win!']]);
+    turns.forEach(([n, r]) => { g.push('§W' + n, 'You guessed: ' + n, r); if (r !== 'You win!') g.push('Please input your guess.'); });
+    return g;
+  }
+  boot() {
+    const L = window.OxLib, v = this.props.variant || '', fresh = this.fresh(), day1 = v === 'day1' || v === 'first' || (fresh && !v), R = L.RUST;
+    const fs = this.fs0(day1 || fresh), Pst = window.__oxP && window.__oxP[this.props.sid];
+    if (Pst) {
+      Object.keys(Pst.deleted).forEach(n => this.rmProj(fs, n));
+      Object.keys(Pst.files).forEach(n => { const r = '~/projects/' + n, F = Pst.files[n]; if (!fs[r]) return; if (F['src/main.rs'] != null && fs[r + '/src']) fs[r + '/src'].f['main.rs'] = F['src/main.rs']; if (F['Cargo.toml'] != null) fs[r].f['Cargo.toml'] = F['Cargo.toml']; });
+    }
+    const B = (cmd, lines, o) => Object.assign({ id: ++this._id, cmd, lines, st: 'ok', code: 0, dur: '' }, o || {});
+    let cwd = fresh ? '~/projects' : '~/projects/guessing_game', blocks = [], proc = null, mis = null;
+    if (day1) {
+      cwd = '~/projects'; mis = { new: false, cd: false, run: false, name: 'hello_world' };
+      blocks.push(B('', ['§dOxide terminal · rustc ' + R.ver + ' · cargo ' + R.ver, { t: '§dYour projects live in §n~/projects§d. Type §nhelp§d to see what works here.', w: 1 }]));
+      if (v === 'first') {
+        this.mk(fs, '~/projects/hello_world', L.HELLO_RS, L.newToml('hello_world'), true);
+        cwd = '~/projects/hello_world'; mis = { new: true, cd: true, run: true, name: 'hello_world' };
+        blocks.push(B('cargo new hello_world', this.newOut('hello_world'), { dur: '0.1s' }), B('cd hello_world', []), B('cargo run', [this.st('Compiling') + ' hello_world v0.1.0 (/data/oxide/projects/hello_world)', this.finished('dev', '0.48s'), this.st('Running') + ' `target/debug/hello_world`', 'Hello, world!'], { dur: '0.48s' }));
+      }
+    } else if (v === 'error' || v === 'explain') {
+      cwd = '~/rustlings';
+      const code = String(this.props.arg || '').toUpperCase();
+      if (!(v === 'explain' && L.ERRS[code])) blocks.push(B('rustlings run move_semantics2', L.EX.move_semantics2.results.E0382.out, { st: 'err', code: 1, err: 'E0382', ex: 'move_semantics2', dur: '0.6s' }));
+      if (v === 'explain') { const c = L.ERRS[code] ? code : 'E0382'; blocks.push(B('rustc --explain ' + c, this.explainLines(L.ERRS[c]), { explain: c })); }
+    } else if (v !== 'cmd') {
+      const game = v === 'game';
+      blocks.push(B('ls', [{ t: 'Cargo.lock  Cargo.toml  §Bsrc§n  §Btarget§n', w: 1 }]), B('cargo run', this.gameLines(game), game ? { st: 'run' } : { dur: '41s' }));
+      if (game) proc = { id: blocks[1].id, kind: 'guess', secret: 68, name: 'guessing_game', t0: Date.now() - 26000 };
+    }
+    if (!fs[cwd]) cwd = '~/projects';
+    this.setState({ fs, cwd, blocks, proc, mis }, () => { this.scroll(); if (v === 'cmd' && this.props.arg) this.runCmds(this.props.arg); });
+  }
+  fs0(empty) {
+    const L = window.OxLib, fs = {
+      '~': { d: ['projects', 'rustlings'], f: {} },
+      '~/projects': { d: [], f: {} },
+      '~/rustlings': { d: ['exercises', 'solutions'], f: { 'Cargo.toml': '[package]\nname = "exercises"\nversion = "0.1.0"\nedition = "2024"\npublish = false' }, rl: true },
+      '~/rustlings/exercises': { d: [], f: { 'README.md': '' } },
+      '~/rustlings/solutions': { d: [], f: {} }
+    };
+    L.RL.path.forEach(p => {
+      if (p.t !== 'topic') return;
+      fs['~/rustlings/exercises'].d.push(p.dir);
+      const f = {}; for (let j = 1; j <= p.n; j++) f[(p.ex || p.name) + j + '.rs'] = '';
+      fs['~/rustlings/exercises/' + p.dir] = { d: [], f };
+    });
+    fs['~/rustlings/exercises'].d.push('quizzes');
+    fs['~/rustlings/exercises/quizzes'] = { d: [], f: { 'quiz1.rs': '', 'quiz2.rs': '', 'quiz3.rs': '' } };
+    Object.keys(L.EX).forEach(k => { const ex = L.EX[k]; if (!ex.rl || !ex.file) return; const i = ex.file.lastIndexOf('/'), dir = fs['~/rustlings/' + ex.file.slice(0, i)]; if (dir) dir.f[ex.file.slice(i + 1)] = ex.code; });
+    if (!empty) { this.mk(fs, '~/projects/guessing_game', L.GUESS.main, L.GUESS.toml, true, L.GUESS.lock); this.mk(fs, '~/projects/hello_world', L.HELLO_RS, L.newToml('hello_world'), true); }
+    return fs;
+  }
+  rmProj(fs, n) { const r = '~/projects/' + n; Object.keys(fs).forEach(p => { if (p === r || p.indexOf(r + '/') === 0) delete fs[p]; }); if (fs['~/projects']) fs['~/projects'].d = fs['~/projects'].d.filter(x => x !== n); }
+  mk(fs, p, main, toml, built, lock) {
+    const i = p.lastIndexOf('/'), parent = fs[p.slice(0, i)], name = p.slice(i + 1);
+    parent.d.push(name); parent.d.sort();
+    fs[p] = { d: built ? ['src', 'target'] : ['src'], f: { 'Cargo.toml': toml }, proj: name, built: !!built };
+    if (lock) fs[p].f['Cargo.lock'] = lock;
+    fs[p + '/src'] = { d: [], f: { 'main.rs': main } };
+    if (built) fs[p + '/target'] = { d: ['debug'], f: {} };
+  }
+  res(a) {
+    let parts;
+    if (a === '~' || a.startsWith('~/')) parts = a.slice(1).split('/');
+    else if (a.startsWith('/data/oxide')) parts = a.slice(11).split('/');
+    else if (a.startsWith('/')) parts = ['\u0000'];
+    else parts = (this.state.cwd.slice(1) + '/' + a).split('/');
+    const out = [];
+    parts.forEach(x => { if (!x || x === '.') return; if (x === '..') out.pop(); else out.push(x); });
+    return '~' + (out.length ? '/' + out.join('/') : '');
+  }
+  file(p) { const i = p.lastIndexOf('/'); if (i < 0) return undefined; const d = this.state.fs[p.slice(0, i)]; return d ? d.f[p.slice(i + 1)] : undefined; }
+  root() { const fs = this.state.fs; let p = this.state.cwd; for (;;) { if (fs[p] && fs[p].f['Cargo.toml'] !== undefined) return p; const i = p.lastIndexOf('/'); if (i < 0) return null; p = p.slice(0, i); } }
+  add(cmd, o) { const id = ++this._id; this.setState(s => ({ blocks: s.blocks.concat([Object.assign({ id, cmd, lines: [], st: 'run', code: 0, dur: '' }, o || {})]) })); return id; }
+  upd(id, f) { this.setState(s => ({ blocks: s.blocks.map(b => b.id === id ? Object.assign({}, b, f(b)) : b) })); }
+  fin(id, lines, code, o) { this.upd(id, b => Object.assign({ lines: b.lines.concat(lines || []), st: code ? 'err' : 'ok', code: code || 0 }, o || {})); }
+  later(ms, f) { this._tm.push(setTimeout(f, ms)); }
+  focusIn() { const el = this.inRef.current; if (el) el.focus({ preventScroll: true }); }
+  exec = (raw) => {
+    const line = String(raw || '').replace(/§/g, '');
+    if (this.state.proc) return this.stdin(line);
+    const t = line.trim();
+    this.setState({ input: '', hi: -1 });
+    if (!t) return;
+    const prevHist = this.state.hist;
+    this.setState(s => ({ hist: s.hist.concat([t]) }));
+    const a = t.split(/\s+/), c = a[0];
+    if (c === 'clear') return this.setState({ blocks: [] });
+    const id = this.add(t), S = this.state;
+    switch (c) {
+      case 'help': return this.fin(id, ['§WCommands that work here', '  §ocargo§n new, build, run, check, test, clippy, fmt', '  §orustc§n --version, --explain E0382', '  §orustlings§n run, hint [exercise]', '  §oedit§n src/main.rs, opens it in the editor', '  §ols  cd  pwd  cat  echo  history  clear', '', { t: '§dTab completes names. ↑ brings back earlier commands.', w: 1 }]);
+      case 'pwd': return this.fin(id, ['/data/oxide' + S.cwd.slice(1)]);
+      case 'whoami': return this.fin(id, ['sam']);
+      case 'echo': return this.fin(id, [{ t: t.slice(4).trim().replace(/^(["'])(.*)\1$/, '$2'), w: 1 }]);
+      case 'history': return this.fin(id, prevHist.concat([t]).map((h, i) => String(i + 1).padStart(5) + '  ' + h));
+      case 'ls': return this.ls(id, a.slice(1).filter(x => x[0] !== '-')[0]);
+      case 'cd': return this.cd(id, a[1]);
+      case 'cat': return this.cat(id, a[1]);
+      case 'edit': case 'nano': case 'vim': case 'vi': case 'code': return this.edit(id, a[1]);
+      case 'cargo': return this.cargo(id, a.slice(1));
+      case 'rustc': return this.rustc(id, a.slice(1));
+      case 'rustlings': return this.rustlings(id, a.slice(1));
+      default: return c.startsWith('./') ? this.bin(id, c) : this.fin(id, ['sh: ' + c + ': not found'], 127);
+    }
+  };
+  ls(id, a) {
+    const S = this.state, p = a ? this.res(a) : S.cwd, d = S.fs[p];
+    if (!d) return this.file(p) !== undefined ? this.fin(id, [a]) : this.fin(id, ["ls: cannot access '" + a + "': No such file or directory"], 2);
+    const names = d.d.map(n => ({ n, k: 'd' })).concat(Object.keys(d.f).map(n => ({ n, k: typeof d.f[n] === 'object' ? 'x' : 'f' }))).sort((x, y) => x.n.toLowerCase() < y.n.toLowerCase() ? -1 : 1);
+    this.fin(id, names.length ? [{ t: names.map(x => x.k === 'd' ? '§B' + x.n + '§n' : x.k === 'x' ? '§G' + x.n + '§n' : x.n).join('  '), w: 1 }] : []);
+  }
+  cd(id, a) {
+    const p = this.res(a || '~');
+    if (!this.state.fs[p]) return this.fin(id, [(this.file(p) !== undefined ? 'cd: not a directory: ' : 'cd: no such file or directory: ') + a], 1);
+    this.setState({ cwd: p }); this.fin(id, []); this.mission('cd', p);
+  }
+  cat(id, a) {
+    if (!a) return this.fin(id, []);
+    const p = this.res(a), f = this.file(p);
+    if (this.state.fs[p]) return this.fin(id, ['cat: ' + a + ': Is a directory'], 1);
+    if (f === undefined) return this.fin(id, ['cat: ' + a + ': No such file or directory'], 1);
+    if (typeof f === 'object') return this.fin(id, ['§d(binary file)']);
+    if (/\.rs$/.test(p)) return this.fin(id, window.OxLib.highlight(f).map(l => ({ segs: l.toks })));
+    this.fin(id, f ? f.split('\n') : []);
+  }
+  edit(id, a) {
+    const S = this.state, root = this.root();
+    if (!a) return this.fin(id, ['usage: edit <file>'], 1);
+    const p = this.res(a), f = this.file(p), pr = root && S.fs[root].proj;
+    if (typeof f !== 'string') return this.fin(id, [a + ': No such file'], 1);
+    const rel = pr && p.indexOf(root + '/') === 0 ? p.slice(root.length + 1) : '';
+    if (rel !== 'src/main.rs' && rel !== 'Cargo.toml') return this.fin(id, [{ t: '§dThe editor opens src/main.rs and Cargo.toml in your projects.', w: 1 }], 1);
+    this.fin(id, ['§dOpened ' + rel + ' in the editor']);
+    this.later(220, () => this.props.nav && this.props.nav('editor', { arg: pr, variant: rel, from: 'terminal' }));
+  }
+  prints(src) {
+    const out = [], re = /println!\(\s*(?:"((?:[^"\\]|\\.)*)"[^;]*)?\)/g; let m;
+    while ((m = re.exec(src))) out.push((m[1] || '').replace(/\\"/g, '"').replace(/\\\\/g, '\\'));
+    return out;
+  }
+  cargo(id, a) {
+    const L = window.OxLib, R = L.RUST, sub = a[0], S = this.state;
+    if (!sub || sub === 'help' || sub === '--help' || sub === '-h') return this.fin(id, ["Rust's package manager", '', '§WUsage:§n cargo [OPTIONS] [COMMAND]', '', '§WCommands:', '    §cnew§n      Create a new cargo package', '    §cbuild§n    Compile the current package', '    §ccheck§n    Analyze the current package and report errors', '    §crun§n      Run a binary or example of the local package', '    §ctest§n     Run the tests', '    §cclippy§n   Checks a package to catch common mistakes', '    §cfmt§n      Formats all bin and lib files of the current crate']);
+    if (sub === '--version' || sub === '-V' || sub === 'version') return this.fin(id, ['cargo ' + R.ver + ' (' + R.cargoHash + ' ' + R.cargoDate + ')']);
+    if (sub === 'new') return this.cargoNew(id, a.slice(1).filter(x => x[0] !== '-')[0]);
+    const SUB = { build: 'build', b: 'build', run: 'run', r: 'run', check: 'check', c: 'check', test: 'test', t: 'test', clippy: 'clippy', fmt: 'fmt' }[sub];
+    if (!SUB) return this.fin(id, ['§Rerror§W: no such command: `' + sub + '`', '', { t: '\tView all installed commands with `cargo --list`', w: 1 }], 101);
+    const root = this.root();
+    if (!root) return this.fin(id, [{ t: '§Rerror§W: could not find `Cargo.toml` in `/data/oxide' + S.cwd.slice(1) + '` or any parent directory', w: 1 }], 101);
+    const d = S.fs[root];
+    if (d.rl) return this.fin(id, [{ t: '§dExercises in ~/rustlings run through Rustlings. Try §nrustlings run§d.', w: 1 }], 1);
+    if (SUB === 'fmt') return this.fin(id, []);
+    const name = d.proj, abs = '/data/oxide' + root.slice(1), first = !d.built, comp = this.st('Compiling') + ' ' + name + ' v0.1.0 (' + abs + ')';
+    const t = first ? (0.38 + Math.random() * 0.5).toFixed(2) + 's' : '0.0' + (2 + Math.floor(Math.random() * 6)) + 's';
+    const built = () => { if (!d.built) { d.built = true; d.d.push('target'); d.d.sort(); S.fs[root + '/target'] = { d: ['debug'], f: {} }; } };
+    if (SUB === 'check' || SUB === 'clippy') return this.later(600, () => this.fin(id, [this.st('Checking') + ' ' + name + ' v0.1.0 (' + abs + ')', this.finished('dev', '0.3' + Math.floor(Math.random() * 10) + 's')], 0, { dur: '0.4s' }));
+    if (SUB === 'build') return this.later(first ? 1000 : 300, () => { built(); this.fin(id, (first ? [comp] : []).concat([this.finished('dev', t)]), 0, { dur: t }); });
+    if (SUB === 'test') return this.later(1100, () => { built(); this.fin(id, [comp, this.finished('test', '0.5' + Math.floor(Math.random() * 10) + 's'), this.st('Running') + ' unittests src/main.rs (target/debug/deps/' + name + '-3f6c1e09a2b4d871)', '', 'running 0 tests', '', 'test result: §gok§n. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s', ''], 0, { dur: '0.6s' }); });
+    this.later(first ? 1000 : 300, () => {
+      built();
+      const src = (S.fs[root + '/src'] || { f: {} }).f['main.rs'] || '', head = (first ? [comp] : []).concat([this.finished('dev', t), this.st('Running') + ' `target/debug/' + name + '`']);
+      if (/Guess the number!/.test(src)) { this.upd(id, b => ({ lines: b.lines.concat(head, ['Guess the number!', 'Please input your guess.']) })); return this.setState({ proc: { id, kind: 'guess', secret: 1 + Math.floor(Math.random() * 100), name, t0: Date.now() } }); }
+      const out = this.prints(src); this.fin(id, head.concat(out), 0, { dur: t }); this.mission('run', out);
+    });
+  }
+  cargoNew(id, nm) {
+    const L = window.OxLib, fs = this.state.fs;
+    if (!nm) return this.fin(id, ['§Rerror§W: the following required arguments were not provided:', '  §g<PATH>', '', '§WUsage:§n cargo new <PATH>'], 1);
+    const p = this.res(nm), i = p.lastIndexOf('/'), base = p.slice(i + 1), parent = i > 0 ? p.slice(0, i) : '';
+    if (fs[p] || this.file(p) !== undefined) return this.fin(id, [{ t: '§Rerror§W: destination `/data/oxide' + p.slice(1) + '` already exists', w: 1 }, '', { t: 'Use `cargo init` to initialize the directory', w: 1 }], 101);
+    if (!fs[parent]) return this.fin(id, [{ t: '§Rerror§W: failed to create directory `/data/oxide' + p.slice(1) + '`', w: 1 }], 101);
+    if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(base)) return this.fin(id, [{ t: '§Rerror§W: invalid character in package name: `' + base + '`', w: 1 }], 101);
+    const Pst = window.__oxP && window.__oxP[this.props.sid]; if (Pst) { delete Pst.deleted[base]; delete Pst.files[base]; }
+    this.later(350, () => { this.mk(fs, p, L.HELLO_RS, L.newToml(base), false); this.fin(id, this.newOut(base), 0, { dur: '0.1s' }); this.mission('new', base); });
+  }
+  explainLines(e) {
+    const L = window.OxLib, out = [];
+    e.md.forEach((m, i) => {
+      if (i) out.push('');
+      if (typeof m === 'string') out.push({ t: m.replace(/`([^`]+)`/g, '§c$1§n'), w: 1 });
+      else L.highlight(m.c).forEach(l => out.push({ segs: [{ k: 'p', t: '    ', s: null }].concat(l.toks) }));
+    });
+    return out;
+  }
+  rustc(id, a) {
+    const L = window.OxLib, R = L.RUST;
+    if (!a.length) return this.fin(id, ['§Rerror§W: no input filename given'], 1);
+    if (a[0] === '--version' || a[0] === '-V') return this.fin(id, ['rustc ' + R.ver + ' (' + R.hash + ' ' + R.date + ')']);
+    if (a[0] === '--explain') {
+      if (!a[1]) return this.fin(id, ["§Rerror§W: Argument to option 'explain' missing"], 1);
+      let c = a[1].toUpperCase(); if (/^\d{4}$/.test(c)) c = 'E' + c;
+      return L.ERRS[c] ? this.fin(id, this.explainLines(L.ERRS[c]), 0, { explain: c }) : this.fin(id, ['§Rerror§W: ' + a[1] + ' is not a valid error code'], 1);
+    }
+    const p = this.res(a[0]), f = this.file(p);
+    if (typeof f !== 'string') return this.fin(id, [{ t: "§Rerror§W: couldn't read `" + a[0] + '`: No such file or directory (os error 2)', w: 1 }], 1);
+    this.later(700, () => { const i = p.lastIndexOf('/'); this.state.fs[p.slice(0, i)].f[p.slice(i + 1).replace(/\.rs$/, '')] = { bin: f }; this.fin(id, [], 0, { dur: '0.6s' }); });
+  }
+  bin(id, c) {
+    const f = this.file(this.res(c.slice(2)));
+    if (f && typeof f === 'object') { const out = this.prints(f.bin); this.fin(id, out); return this.mission('run', out); }
+    this.fin(id, ['sh: ' + c + (typeof f === 'string' ? ': Permission denied' : ': not found')], typeof f === 'string' ? 126 : 127);
+  }
+  rustlings(id, a) {
+    const L = window.OxLib, sub = a[0], cur = this.fresh() ? 'intro1' : 'move_semantics2';
+    if (sub === 'run' || sub === 'hint') {
+      const nm = a[1] || cur, ex = L.EX[nm];
+      if (!ex || !ex.rl) {
+        const known = L.RL.path.some(p => p.t === 'quiz' ? p.name === nm : new RegExp('^' + (p.ex || p.name) + '[1-9]$').test(nm));
+        return known ? this.fin(id, [{ t: '§dOpen §n' + nm + '§d from the Practice tab to work on it.', w: 1 }], 0, { practice: true }) : this.fin(id, ["§RError§W: No exercise found for '" + nm + "'"], 1);
+      }
+      if (sub === 'hint') return this.fin(id, ex.hints[1].split('\n').map(t => ({ t: t.replace(/`([^`]+)`/g, '§c$1§n'), w: 1 })), 0, { ex: nm });
+      return this.later(900, () => {
+        const key = ex.check(ex.code), r = ex.results[key];
+        if (key === 'pass') this.fin(id, L.RUN_OK[nm] || r.out, 0, { dur: '0.5s', ex: nm });
+        else this.fin(id, r.out, 1, { dur: '0.6s', err: r.code, ex: nm });
+      });
+    }
+    this.fin(id, [{ t: 'The Practice tab runs Rustlings for you, with hints and the official solutions.', w: 1 }, { t: 'Here you can use §orustlings run§n and §orustlings hint§n, with or without an exercise name.', w: 1 }], 0, { practice: true });
+  }
+  stdin(v) {
+    const P = this.state.proc; this.setState({ input: '' });
+    if (!P || P.kind !== 'guess') return;
+    const t = v.trim(), n = /^\+?\d{1,10}$/.test(t) ? Number(t.replace('+', '')) : NaN, out = ['§W' + v];
+    let won = false;
+    if (isNaN(n) || n > 4294967295) out.push('Please input your guess.');
+    else { out.push('You guessed: ' + n); if (n < P.secret) out.push('Too small!', 'Please input your guess.'); else if (n > P.secret) out.push('Too big!', 'Please input your guess.'); else { out.push('You win!'); won = true; } }
+    if (won) { this.fin(P.id, out, 0, { dur: this.secs(P.t0) }); this.setState({ proc: null }); }
+    else this.upd(P.id, b => ({ lines: b.lines.concat(out) }));
+  }
+  secs(t0) { const s = Math.max(1, Math.round((Date.now() - t0) / 1000)); return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + (s % 60) + 's'; }
+  ctrlC = () => {
+    const P = this.state.proc;
+    if (!P) return this.setState({ input: '', hi: -1 });
+    this.fin(P.id, ['^C'], 130); this.setState({ proc: null, input: '' });
+  };
+  mission(k, v) {
+    const m = this.state.mis; if (!m || m[k]) return;
+    if (k === 'cd' && !(this.state.fs[v] && this.state.fs[v].proj)) return;
+    if (k === 'run' && !(v || []).some(l => /Hello, world!/.test(l))) return;
+    const mis = Object.assign({}, m, { [k]: true });
+    if (k === 'new') mis.name = v;
+    if (k === 'run') { mis.new = true; mis.cd = true; if (this.props.mark) this.props.mark('hello'); }
+    this.setState({ mis });
+  }
+  histNav(dir) {
+    const H = this.state.hist; if (!H.length || this.state.proc) return;
+    const i = Math.max(0, Math.min(H.length, (this.state.hi < 0 ? H.length : this.state.hi) + dir));
+    this.setState({ hi: i === H.length ? -1 : i, input: i === H.length ? '' : H[i] });
+  }
+  complete() {
+    const S = this.state, parts = S.input.split(' '), last = parts[parts.length - 1];
+    let c;
+    if (parts.length === 1) c = ['cargo', 'cat', 'cd', 'clear', 'echo', 'help', 'history', 'ls', 'pwd', 'rustc', 'rustlings'];
+    else if (parts.length === 2 && parts[0] === 'cargo') c = ['build', 'check', 'clippy', 'fmt', 'new', 'run', 'test'];
+    else if (parts.length === 2 && parts[0] === 'rustlings') c = ['hint', 'run'];
+    else { const j = last.lastIndexOf('/'), pre = last.slice(0, j + 1), d = S.fs[pre ? this.res(pre) : S.cwd]; c = d ? d.d.map(n => pre + n + '/').concat(Object.keys(d.f).map(n => pre + n)) : []; }
+    const m = c.filter(x => x.startsWith(last)); if (!m.length) return;
+    let s = m[0]; m.forEach(x => { while (!x.startsWith(s)) s = s.slice(0, -1); });
+    parts[parts.length - 1] = s + (m.length === 1 && !s.endsWith('/') ? ' ' : '');
+    this.setState({ input: parts.join(' ') });
+  }
+  key(k) {
+    if (k === 'Tab') return this.complete();
+    if (k === '⌃C') return this.ctrlC();
+    if (k === '↑') return this.histNav(-1);
+    if (k === '↓') return this.histNav(1);
+    this.setState(s => ({ input: s.input + k }));
+  }
+  onKey = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); this.exec(this.state.input); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); this.histNav(-1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); this.histNav(1); }
+    else if (e.key === 'Tab') { e.preventDefault(); this.complete(); }
+    else if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) { e.preventDefault(); this.ctrlC(); }
+    else if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); this.setState({ blocks: [] }); }
+  };
+  chips() {
+    const S = this.state, m = S.mis, fs = S.fs, root = this.root();
+    let pri = '', list;
+    if (m && !(m.new && m.cd && m.run)) pri = !m.new ? 'cargo new hello_world' : !m.cd ? 'cd ' + (S.cwd === '~/projects' ? m.name : '~/projects/' + m.name) : 'cargo run';
+    if (root && fs[root].rl) list = ['rustlings run', 'rustlings hint', 'ls exercises', 'cd ~/projects'];
+    else if (root) list = ['cargo run', 'edit src/main.rs', 'cargo build', 'cargo check', 'cargo test', 'cargo clippy', 'ls'];
+    else if (S.cwd === '~/projects') list = ['ls'].concat(fs['~/projects'].d.map(n => 'cd ' + n), ['cargo new ']);
+    else list = ['ls', 'cd ~/projects', 'cd ~/rustlings', 'help'];
+    if (pri) list = [pri].concat(list.filter(x => x !== pri));
+    return list.map(t => {
+      const p = t === pri, open = t.endsWith(' ');
+      return { k: t, t: open ? t.trim() + ' …' : t, bg: p ? '#F74C00' : '#211F1E', bd: p ? '#F74C00' : '#2E2C2A', c: p ? '#1A0B04' : '#E4DFD9', onTap: () => { if (open) { this.setState({ input: t }); this.focusIn(); } else this.exec(t); } };
+    });
+  }
+  sheetRows() {
+    const S = this.state, fs = S.fs, fresh = this.fresh();
+    const META = { guessing_game: 'Chapter 2 · Programming a Guessing Game', hello_world: 'Chapter 1 · Hello, World!', minigrep: 'Chapter 12 · An I/O project', hello: 'Chapter 21 · A multithreaded web server' };
+    const at = (p) => S.cwd === p || S.cwd.startsWith(p + '/');
+    const rows = fs['~/projects'].d.map(n => ({ k: n, name: n, path: '~/projects/' + n, sub: META[n] || 'Cargo project', icon: 'folder', on: at('~/projects/' + n) }))
+      .concat([{ k: 'rl', name: 'rustlings', path: '~/rustlings', sub: fresh ? '95 exercises' : '26 of 95 exercises done', icon: 'data_object', on: at('~/rustlings') }, { k: 'home', name: '~', path: '~', sub: 'Home folder', icon: 'home', on: S.cwd === '~' }]);
+    const book = ['minigrep', 'hello'].filter(n => !fs['~/projects/' + n]).map(n => ({ k: n, name: n, sub: META[n], onTap: () => { this.setState({ sheet: false, input: 'cargo new ' + n }); this.focusIn(); } }));
+    return {
+      on: S.sheet, hasBook: book.length > 0, book,
+      rows: rows.map(r => Object.assign(r, { bg: r.on ? 'rgba(247,76,0,0.08)' : 'transparent', ic: r.on ? '#FF8A55' : '#A39C95', tc: r.on ? '#ECE8E3' : '#D9D3CC', mark: r.on ? 'check' : '', onTap: () => { this.setState({ sheet: false }); if (!r.on && !this.state.proc) this.exec('cd ' + r.path); } }))
+    };
+  }
+  renderVals() {
+    const L = window.OxLib, S = this.state, R = React;
+    const base = {
+      scRef: this.scRef, inRef: this.inRef, input: S.input, focus: S.focus, keep: (e) => e.preventDefault(),
+      onInput: (e) => this.setState({ input: e.target.value }), onKey: this.onKey, onFocus: () => this.setState({ focus: true }), onBlur: () => this.setState({ focus: false }),
+      submit: () => this.exec(S.input), ctrlC: this.ctrlC, clear: () => this.setState({ blocks: [] }),
+      goBack: () => this.props.back && this.props.back(), goHome: () => this.props.tab && this.props.tab('home'),
+      openSheet: () => this.setState({ sheet: true }), closeSheet: () => this.setState({ sheet: false }),
+      newProject: () => { this.setState({ sheet: false, input: 'cargo new ' }); this.focusIn(); },
+      keys: ['Tab', '⌃C', '↑', '↓', '~', '/', '-', '_', '|', '.'].map(k => ({ k, t: k, onTap: () => this.key(k) }))
+    };
+    if (!L || !S.fs) return Object.assign(base, { head: { name: '', path: '', icon: 'terminal', back: false }, mission: { on: false, steps: [] }, blocks: [], empty: false, procRow: { on: false }, chipsOn: false, chips: [], inp: { prompt: '$', pc: '#FF8A55', ph: 'Type a command', bw: '1px', bc: '#2E2C2A', sb: '#262422', sc: '#6E6862' }, sheet: { on: false, rows: [], book: [], hasBook: false } });
+    const blocks = S.blocks.map(b => {
+      const run = b.st === 'run', isProc = !!(S.proc && S.proc.id === b.id);
+      const lines = b.lines.map((l, j) => {
+        const wrap = typeof l === 'object' && !!l.w;
+        return { k: j, segs: typeof l === 'string' ? L.ansi(l) : l.segs ? l.segs : L.ansi(l.t), ws: wrap ? 'pre-wrap' : 'pre', w: wrap ? 'auto' : 'max-content' };
+      });
+      const acts = [];
+      if (b.err && L.ERRS[b.err]) acts.push({ k: 'x', icon: 'help', ic: '#FF8F98', label: 'Explain ' + b.err, onTap: () => this.exec('rustc --explain ' + b.err) });
+      if (b.ex) acts.push({ k: 'e', icon: 'data_object', ic: '#57D6C8', label: 'Open ' + b.ex, onTap: () => this.props.nav && this.props.nav('workspace', { arg: b.ex }) });
+      if (b.explain && L.ERRS[b.explain].sec === '4.2') acts.push({ k: 'r', icon: 'menu_book', ic: '#FF8A55', label: 'Read 4.2', onTap: () => this.props.nav && this.props.nav('reader', { variant: 'resume' }) });
+      if (b.practice) acts.push({ k: 'p', icon: 'data_object', ic: '#57D6C8', label: 'Open Practice', onTap: () => this.props.tab && this.props.tab('practice') });
+      return {
+        k: b.id, id: b.id, cmd: b.cmd, hasCmd: !!b.cmd, lines, hasOut: lines.length > 0, acts, hasActs: acts.length > 0,
+        menu: () => this.props.pop && this.props.pop('block', { cmd: b.cmd, meta: b.st === 'err' ? 'exit ' + b.code : (b.dur || S.cwd), out: b.lines.map(l => typeof l === 'string' ? l : l.t != null ? l.t : (l.segs || []).map(s => s.t).join('')).join('\n').replace(/§./g, ''), onRerun: () => this.exec(b.cmd) }),
+        spin: run && !isProc ? L.FX.spin(R, '#FF8A55', 13, 2) : null,
+        meta: isProc ? 'running' : run ? '' : b.st === 'err' ? 'exit ' + b.code : b.dur, mc: b.st === 'err' ? '#FF8F98' : isProc ? '#FF8A55' : '#8C867F'
+      };
+    });
+    const cwd = S.cwd, root = this.root();
+    const head = { name: cwd === '~' ? '~' : cwd.slice(cwd.lastIndexOf('/') + 1), path: cwd === '~' ? '/data/oxide' : cwd, icon: cwd.startsWith('~/rustlings') ? 'data_object' : root ? 'folder_open' : 'terminal', back: Number(this.props.depth) > 1 };
+    const m = S.mis, md = !!(m && m.new && m.cd && m.run);
+    const mission = m ? {
+      on: true, done: md, kicker: md ? 'MISSION COMPLETE · +60 XP' : 'TODAY’S MISSION · STEP 3 OF 3', kc: md ? '#57D6C8' : '#A39C95', bd: md ? 'rgba(87,214,200,0.32)' : 'rgba(255,255,255,0.05)',
+      title: md ? 'You ran your first Rust program.' : 'Make a Cargo project and run it',
+      sub: md ? 'Tomorrow, 1.3 Hello, Cargo! explains what Cargo just did.' : 'Cargo is Rust’s build tool. It makes a project with a Hello, world! program already in it.',
+      steps: [['cargo new ' + m.name, m.new], ['cd ' + m.name, m.cd], ['cargo run', m.run]].map(([t, ok], i) => ({ k: i, t, icon: ok ? 'check_circle' : 'radio_button_unchecked', fill: ok ? "'FILL' 1" : "'FILL' 0", c: ok ? '#57D6C8' : '#B3ACA5', bg: ok ? 'rgba(87,214,200,0.1)' : '#211F1E' }))
+    } : { on: false, steps: [] };
+    const procRow = S.proc ? { on: true, text: S.proc.name + ' is waiting for input', pulse: R.createElement('span', { style: { width: '8px', height: '8px', borderRadius: '4px', background: '#57D6C8', flex: 'none', animation: 'ox-pulse 1.2s ease-in-out infinite' } }) } : { on: false };
+    const has = S.input.trim().length > 0 || !!S.proc;
+    const inp = { prompt: S.proc ? '›' : '$', pc: S.proc ? '#57D6C8' : '#FF8A55', ph: S.proc ? 'Type a number, then Enter' : 'Type a command', bw: S.focus ? '1.5px' : '1px', bc: S.focus ? '#F74C00' : '#2E2C2A', sb: has ? '#F74C00' : '#262422', sc: has ? '#1A0B04' : '#6E6862' };
+    return Object.assign(base, { head, mission, blocks, empty: blocks.length === 0, procRow, chipsOn: !S.proc, chips: this.chips(), inp, sheet: this.sheetRows() });
+  }
+}
+</script>
+</body>
+</html>

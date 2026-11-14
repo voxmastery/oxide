@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&display=block" rel="stylesheet">
+<script src="oxide-lib.js"></script>
+<style>body{margin:0}a{color:#FF8A55}a:hover{color:#FFA070}@keyframes ox-spin{to{transform:rotate(360deg)}}</style>
+</helmet>
+<div style="height:100%;display:flex;flex-direction:column;background:#0F0E0E;font-family:'Public Sans',sans-serif;color:#ECE8E3">
+  <div style="height:56px;flex:none;display:flex;align-items:center;gap:2px;padding:0 4px">
+    <button onClick="{{ goBack }}" style="width:48px;height:48px;flex:none;border:0;background:none;border-radius:24px;color:#ECE8E3;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">arrow_back</span></button>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-left:2px">
+      <span style="font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sec.label }}</span>
+      <span style="font-size:12.5px;color:#A39C95;white-space:nowrap">{{ meta }}</span>
+    </div>
+    <button onClick="{{ openDisplay }}" title="Text settings" style="width:48px;height:48px;flex:none;border:0;background:none;border-radius:24px;color:#D9D3CC;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">text_fields</span></button>
+    <button onClick="{{ toc }}" title="Contents" style="width:48px;height:48px;flex:none;border:0;background:none;border-radius:24px;color:#D9D3CC;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">toc</span></button>
+  </div>
+  <div style="height:3px;flex:none;background:#1E1C1B"><div style="height:100%;width:{{ prog }}%;background:#F74C00"></div></div>
+
+  <div ref="{{ scRef }}" onScroll="{{ onScroll }}" style="flex:1;min-height:0;overflow-y:auto;position:relative;scrollbar-width:none">
+    <div style="display:flex;flex-direction:column;gap:18px;padding:24px 22px 44px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">{{ sec.kicker }}</span>
+        <h1 style="margin:0;font-size:30px;line-height:1.15;font-weight:650;letter-spacing:-0.025em">{{ sec.title }}</h1>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:#A39C95">{{ sec.read }}</span>
+          <button onClick="{{ sec.chipGo }}" style="height:28px;padding:0 10px 0 8px;border:0;border-radius:8px;background:#1E1C1B;color:{{ sec.chipC }};font:500 12px 'JetBrains Mono',monospace;display:flex;align-items:center;gap:6px;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined';width:16px;height:16px;overflow:hidden">{{ sec.chipIcon }}</span>{{ sec.chip }}</button>
+        </div>
+      </div>
+
+      <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="6">
+        <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:{{ pfs }}px;line-height:{{ plh }};color:#E2DDD7;text-wrap:pretty"><sc-for list="{{ b.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></p></sc-if>
+
+        <sc-if value="{{ b.isH }}" hint-placeholder-val="{{ false }}"><h2 style="margin:12px 0 0;font-size:21px;line-height:1.25;font-weight:650;letter-spacing:-0.015em">{{ b.text }}</h2></sc-if>
+
+        <sc-if value="{{ b.isMark }}" hint-placeholder-val="{{ false }}"><div ref="{{ b.ref }}" style="display:flex;align-items:center;gap:10px;font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:0.08em;color:#FF8A55;white-space:nowrap"><span style="height:1px;flex:1;background:rgba(247,76,0,0.4)"></span>YOU LEFT OFF HERE<span style="height:1px;flex:1;background:rgba(247,76,0,0.4)"></span></div></sc-if>
+
+        <sc-if value="{{ b.isNote }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px 16px;border-radius:14px;background:#171615;display:flex;flex-direction:column;gap:6px">
+            <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">NOTE</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#D9D3CC;text-wrap:pretty"><sc-for list="{{ b.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.isCode }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:16px;background:#171615;overflow:hidden;display:flex;flex-direction:column">
+            <div style="min-height:44px;display:flex;align-items:center;gap:8px;padding:0 6px 0 14px">
+              <span style="font:400 12px 'JetBrains Mono',monospace;color:#8C867F;white-space:nowrap">{{ b.file }}</span>
+              <sc-if value="{{ b.fails }}" hint-placeholder-val="{{ false }}"><span style="height:22px;padding:0 7px;border-radius:6px;background:rgba(255,107,118,0.14);color:#FF8F98;font:600 11px/22px 'JetBrains Mono',monospace;white-space:nowrap">doesn’t compile</span></sc-if>
+              <span style="flex:1"></span>
+              <sc-if value="{{ b.canRun }}" hint-placeholder-val="{{ false }}"><button onClick="{{ b.run }}" style="height:34px;padding:0 12px 0 8px;border:0;border-radius:17px;background:#2A2826;color:#ECE8E3;font:600 13px 'Public Sans',sans-serif;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap" style-hover="background:#34312E"><span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;overflow:hidden;font-variation-settings:'FILL' 1">play_arrow</span>{{ b.runLabel }}</button></sc-if>
+            </div>
+            <div style="padding:0 0 14px;overflow-x:auto;scrollbar-width:none;font:400 12.5px/20px 'JetBrains Mono',monospace;font-variant-ligatures:none">
+              <sc-for list="{{ b.lines }}" as="ln"><div style="padding:0 14px;white-space:pre;min-height:20px;width:max-content"><sc-for list="{{ ln.toks }}" as="t"><span style="{{ t.s }}">{{ t.t }}</span></sc-for></div></sc-for>
+            </div>
+            <sc-if value="{{ b.showOut }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#121110;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);padding:10px 0 12px;overflow-x:auto;scrollbar-width:none;font:400 11px/17px 'JetBrains Mono',monospace;font-variant-ligatures:none">
+                <sc-if value="{{ b.running }}" hint-placeholder-val="{{ false }}"><div style="padding:0 14px;display:flex;align-items:center;gap:8px;color:#A39C95">{{ b.spin }}Compiling…</div></sc-if>
+                <sc-for list="{{ b.out }}" as="l"><div style="padding:0 14px;white-space:pre;min-height:17px;width:max-content"><sc-for list="{{ l.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></div></sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.isQuiz }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:16px;border-radius:20px;background:#1A1918;box-shadow:inset 0 0 0 1px rgba(242,194,91,0.2);display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font:18px/1 'Material Symbols Outlined';width:18px;height:18px;overflow:hidden;color:#F2C25B">quiz</span>
+              <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#F2C25B">QUICK CHECK</span>
+              <span style="flex:1"></span>
+              <span style="font-size:11.5px;color:#8C867F;white-space:nowrap">Brown interactive edition</span>
+            </div>
+            <div style="border-radius:12px;background:#0F0E0E;padding:10px 0;overflow-x:auto;scrollbar-width:none;font:400 12px/19px 'JetBrains Mono',monospace;font-variant-ligatures:none">
+              <sc-for list="{{ b.qLines }}" as="ln"><div style="padding:0 12px;white-space:pre;min-height:19px;width:max-content"><sc-for list="{{ ln.toks }}" as="t"><span style="{{ t.s }}">{{ t.t }}</span></sc-for></div></sc-for>
+            </div>
+            <p style="margin:0;font-size:15.5px;line-height:1.5;font-weight:600;color:#ECE8E3;text-wrap:pretty"><sc-for list="{{ b.prompt }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ b.opts }}" as="o">
+                <button onClick="{{ o.pick }}" style="min-height:52px;display:flex;align-items:center;gap:12px;padding:10px 14px;border:0;border-radius:14px;box-shadow:inset 0 0 0 1.5px {{ o.bd }};background:{{ o.bg }};color:#ECE8E3;cursor:{{ o.cur }};text-align:left;opacity:{{ o.op }}">
+                  <span style="width:22px;height:22px;flex:none;border-radius:11px;box-shadow:inset 0 0 0 2px {{ o.rc }};background:{{ o.rf }};display:flex;align-items:center;justify-content:center"><span style="font:16px/1 'Material Symbols Outlined';width:16px;height:16px;overflow:hidden;color:#0F0E0E;font-variation-settings:'wght' 600">{{ o.icon }}</span></span>
+                  <span style="flex:1;font-size:14.5px;line-height:1.45"><sc-for list="{{ o.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></span>
+                </button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ b.answered }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:14px;background:#211F1E">
+                <span style="font-size:14px;font-weight:650;color:{{ b.vc }}">{{ b.verdict }}</span>
+                <span style="font-size:14px;line-height:1.55;color:#D9D3CC;text-wrap:pretty"><sc-for list="{{ b.context }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.isTry }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px 12px 14px 14px;border-radius:18px;background:#171615;box-shadow:inset 0 0 0 1px rgba(87,214,200,0.22);display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;flex:none;border-radius:12px;background:rgba(87,214,200,0.12);display:flex;align-items:center;justify-content:center"><span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden;color:#57D6C8">data_object</span></div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:0.08em;color:#57D6C8">PRACTICE IN RUSTLINGS · {{ b.xp }}</span>
+              <span style="font:600 15px 'JetBrains Mono',monospace">{{ b.name }}</span>
+              <span style="font-size:13px;line-height:1.4;color:#A39C95"><sc-for list="{{ b.desc }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></span>
+            </div>
+            <button onClick="{{ b.go }}" style="height:40px;flex:none;padding:0 14px;border:0;border-radius:20px;background:#2A2826;color:#ECE8E3;font:600 13.5px 'Public Sans',sans-serif;cursor:pointer" style-hover="background:#34312E">Try it</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.isTip }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px 16px;border-radius:14px;background:rgba(87,214,200,0.07);box-shadow:inset 0 0 0 1px rgba(87,214,200,0.18);display:flex;gap:12px">
+            <span style="font:20px/1 'Material Symbols Outlined';width:20px;height:20px;flex:none;overflow:hidden;color:#57D6C8;margin-top:1px">smartphone</span>
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#57D6C8">IN OXIDE</span><p style="margin:0;font-size:15px;line-height:1.55;color:#D9D3CC;text-wrap:pretty"><sc-for list="{{ b.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></p></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.isEnd12 }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:8px;padding:18px;border-radius:20px;background:#1A1918;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;gap:12px">
+            <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">YOUR TURN</span>
+            <span style="font-size:17px;line-height:1.4;font-weight:600;color:#ECE8E3;text-wrap:pretty">Make a project and run it in the Terminal.</span>
+            <span style="font-size:14.5px;line-height:1.55;color:#A39C95;text-wrap:pretty">Cargo, Rust’s build tool, creates a project with this Hello, world! program already in it. Section 1.3 covers Cargo in full.</span>
+            <button onClick="{{ b.term }}" style="margin-top:4px;height:52px;border:0;border-radius:26px;background:#F74C00;color:#1A0B04;font:650 15.5px 'Public Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:#FF5A10">Open the Terminal<span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden">arrow_forward</span></button>
+            <button onClick="{{ b.next }}" style="height:48px;border:0;border-radius:24px;background:none;box-shadow:inset 0 0 0 1px #3A3735;color:#ECE8E3;font:600 14.5px 'Public Sans',sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,0.04)">Up next: 1.3 Hello, Cargo!</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.isEnd }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:8px;padding:18px;border-radius:20px;background:#1A1918;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;gap:14px">
+            <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:0.09em;color:#A39C95">THE RULES OF REFERENCES</span>
+            <sc-for list="{{ b.rules }}" as="r"><div style="display:flex;gap:10px;font-size:15.5px;line-height:1.55;color:#E2DDD7"><span style="color:#FF8A55;flex:none">•</span><span><sc-for list="{{ r.segs }}" as="sg"><span style="{{ sg.s }}">{{ sg.t }}</span></sc-for></span></div></sc-for>
+            <div style="height:1px;background:rgba(255,255,255,0.07);margin:2px 0"></div>
+            <span style="font-size:13.5px;line-height:1.45;color:#A39C95">Rustlings drills this section in move_semantics2–5.</span>
+            <button onClick="{{ b.practice }}" style="height:52px;border:0;border-radius:26px;background:#F74C00;color:#1A0B04;font:650 15.5px 'Public Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:#FF5A10">Practice: <span style="font-family:'JetBrains Mono',monospace;font-size:14.5px">move_semantics2</span><span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden">arrow_forward</span></button>
+            <button onClick="{{ b.next }}" style="height:48px;border:0;border-radius:24px;background:none;box-shadow:inset 0 0 0 1px #3A3735;color:#ECE8E3;font:600 14.5px 'Public Sans',sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,0.04)">Up next: 4.3 The Slice Type</button>
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { ready: !!window.OxLib, prog: 0, runs: {}, pick: null, fs: 16.5, lh: 1.7 };
+  scRef = React.createRef();
+  markRef = React.createRef();
+  static CODE = { fontFamily: "'JetBrains Mono',monospace", fontSize: '0.86em', background: '#2A2826', color: '#F2CDB8', padding: '1px 5px', borderRadius: '5px' };
+  static QUIZ = {
+    code: 'fn get_first(vr: &Vec<i32>) -> i32 {\n  vr[0]\n}\n\nfn main() {\n  let mut v = vec![0, 1, 2];\n  let n = get_first(&v);\n  println!("{} {}", n, v[1]);\n}',
+    prompt: 'Which of the following best explains why `v` is not deallocated after calling `get_first`?',
+    opts: ['`vr` is not mutated within `get_first`', '`vr` is a reference which does not own the vector it points to', '`get_first` returns a value of type `i32`, not the vector itself', '`v` is used after calling `get_first` in the `println`'],
+    answer: 1,
+    context: 'References are non-owning pointers. Therefore passing `&v` to `get_first` does not move ownership of `v` into `get_first`, and subsequently `v` is not deallocated after `get_first` ends.'
+  };
+  componentDidMount() {
+    if (!window.OxLib) { this._h = () => this.setState({ ready: true }); window.addEventListener('oxlib-ready', this._h); }
+    this._t = setTimeout(() => {
+      const el = this.scRef.current, mk = this.markRef.current;
+      if (el && mk && this.props.variant === 'resume') el.scrollTop = Math.max(0, mk.offsetTop - 64);
+      this.onScroll();
+    }, 160);
+  }
+  componentWillUnmount() { clearTimeout(this._t); Object.keys(this._rt || {}).forEach(k => clearTimeout(this._rt[k])); if (this._h) window.removeEventListener('oxlib-ready', this._h); }
+  onScroll = () => {
+    const el = this.scRef.current; if (!el) return;
+    const max = el.scrollHeight - el.clientHeight, p = max > 0 ? Math.min(100, el.scrollTop / max * 100) : 0;
+    if (Math.abs(p - this.state.prog) > 0.4) this.setState({ prog: p });
+    if (p > 90 && this.props.arg === '1.2' && !this._marked) { this._marked = true; if (this.props.mark) this.props.mark('1.2'); }
+  };
+  fmt(t) {
+    const C = Component.CODE;
+    return String(t).split(/(`[^`]+`|\*[^*`]+\*|\b_[^_`]+_\b)/).filter(Boolean).map((s, i) => s[0] === '`' ? { k: i, t: s.slice(1, -1), s: C } : (s.length > 2 && (s[0] === '_' || s[0] === '*') && s[s.length - 1] === s[0]) ? { k: i, t: s.slice(1, -1), s: { fontStyle: 'italic' } } : { k: i, t: s, s: null });
+  }
+  run(k) {
+    this._rt = this._rt || {};
+    clearTimeout(this._rt[k]);
+    this.setState(s => ({ runs: Object.assign({}, s.runs, { [k]: 'running' }) }));
+    this._rt[k] = setTimeout(() => this.setState(s => ({ runs: Object.assign({}, s.runs, { [k]: 'done' }) })), 900);
+  }
+  blocks() {
+    if (this.props.arg === '1.2') return this._b12 || (this._b12 = this.blocks12());
+    if (this._b) return this._b;
+    const sp = (n) => ' '.repeat(n);
+    const head = ['§d$ cargo run', '   §GCompiling§n ownership v0.1.0 (file:///projects/ownership)'];
+    const fail = (e) => ['', 'For more information about this error, try `rustc --explain ' + e + '`.', '§Rerror§W: could not compile `ownership` (bin "ownership") due to 1 previous error'];
+    const ok = (extra) => head.concat(['    §GFinished§n `dev` profile [unoptimized + debuginfo] target(s) in 0.31s', '     §GRunning§n `target/debug/ownership`'], extra || []);
+    this._b = [
+      { p: 'The issue with the tuple code in Listing 4-5 is that we have to return the `String` to the calling function so that we can still use the `String` after the call to `calculate_length`, because the `String` was moved into `calculate_length`. Instead, we can provide a reference to the `String` value. A reference is like a pointer in that it’s an address we can follow to access the data stored at that address; that data is owned by some other variable. Unlike a pointer, a reference is guaranteed to point to a valid value of a particular type for the life of that reference.' },
+      { p: 'Here is how you would define and use a `calculate_length` function that has a reference to an object as a parameter instead of taking ownership of the value:' },
+      { code: 'fn main() {\n    let s1 = String::from("hello");\n\n    let len = calculate_length(&s1);\n\n    println!("The length of \'{s1}\' is {len}.");\n}\n\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}', file: 'src/main.rs', out: ok(["The length of 'hello' is 5."]) },
+      { p: 'First, notice that all the tuple code in the variable declaration and the function return value is gone. Second, note that we pass `&s1` into `calculate_length` and, in its definition, we take `&String` rather than `String`. These ampersands represent references, and they allow you to refer to some value without taking ownership of it.' },
+      { note: 'The opposite of referencing by using `&` is _dereferencing_, which is accomplished with the dereference operator, `*`. We’ll see some uses of the dereference operator in Chapter 8 and discuss details of dereferencing in Chapter 15.' },
+      { p: 'Let’s take a closer look at the function call here:' },
+      { code: 'let s1 = String::from("hello");\n\nlet len = calculate_length(&s1);', file: 'src/main.rs' },
+      { p: 'The `&s1` syntax lets us create a reference that _refers_ to the value of `s1` but does not own it. Because the reference does not own it, the value it points to will not be dropped when the reference stops being used.' },
+      { p: 'The scope in which the variable `s` is valid is the same as any function parameter’s scope, but the value pointed to by the reference is not dropped when `s` stops being used, because `s` doesn’t have ownership. When functions have references as parameters instead of the actual values, we won’t need to return the values in order to give back ownership, because we never had ownership.' },
+      { mark: true },
+      { p: 'We call the action of creating a reference _borrowing_. As in real life, if a person owns something, you can borrow it from them. When you’re done, you have to give it back. You don’t own it.' },
+      { quiz: true },
+      { tryEx: 'move_semantics2', desc: 'A vector gets moved into a function. Keep both vectors usable.' },
+      { p: 'So, what happens if we try to modify something we’re borrowing? Try the code in Listing 4-6. Spoiler alert: It doesn’t work!' },
+      { code: 'fn main() {\n    let s = String::from("hello");\n\n    change(&s);\n}\n\nfn change(some_string: &String) {\n    some_string.push_str(", world");\n}', file: 'Listing 4-6 · src/main.rs', fails: true, out: head.concat(['§Rerror[E0596]§W: cannot borrow `*some_string` as mutable, as it is behind a `&` reference', '§B --> §nsrc/main.rs:8:5', '§B  |', '§B8 |§n     some_string.push_str(", world");', '§B  |' + sp(5) + '§R^^^^^^^^^^^ `some_string` is a `&` reference, so the data it refers to cannot be borrowed as mutable', '§B  |', '§Chelp§W: consider changing this to be a mutable reference', '§B  |', '§B7 |§n fn change(some_string: &§gmut §nString) {', '§B  |' + sp(25) + '§g+++'], fail('E0596')) },
+      { p: 'Just as variables are immutable by default, so are references. We’re not allowed to modify something we have a reference to.' },
+      { h: 'Mutable References' },
+      { p: 'We can fix the code from Listing 4-6 to allow us to modify a borrowed value with just a few small tweaks that use, instead, a _mutable reference_:' },
+      { code: 'fn main() {\n    let mut s = String::from("hello");\n\n    change(&mut s);\n}\n\nfn change(some_string: &mut String) {\n    some_string.push_str(", world");\n}', file: 'src/main.rs', out: ok() },
+      { p: 'First, we change `s` to be `mut`. Then, we create a mutable reference with `&mut s` where we call the `change` function and update the function signature to accept a mutable reference with `some_string: &mut String`. This makes it very clear that the `change` function will mutate the value it borrows.' },
+      { p: 'Mutable references have one big restriction: If you have a mutable reference to a value, you can have no other references to that value. This code that attempts to create two mutable references to `s` will fail:' },
+      { code: 'let mut s = String::from("hello");\n\nlet r1 = &mut s;\nlet r2 = &mut s;\n\nprintln!("{r1}, {r2}");', file: 'src/main.rs', fails: true, out: head.concat(['§Rerror[E0499]§W: cannot borrow `s` as mutable more than once at a time', '§B --> §nsrc/main.rs:5:14', '§B  |', '§B4 |§n     let r1 = &mut s;', '§B  |' + sp(14) + '------ first mutable borrow occurs here', '§B5 |§n     let r2 = &mut s;', '§B  |' + sp(14) + '§R^^^^^^ second mutable borrow occurs here', '§B6 |', '§B7 |§n     println!("{r1}, {r2}");', '§B  |' + sp(15) + '---- first borrow later used here'], fail('E0499')) },
+      { tryEx: 'move_semantics4', desc: 'Two `&mut` borrows overlap. Fix it only by reordering lines.' },
+      { end: true }
+    ];
+    return this._b;
+  }
+  con(t) { return t.split('\n').map((l, i) => ({ k: i, toks: l.indexOf('$ ') === 0 ? [{ k: 0, t: '$ ', s: { color: '#FF8A55' } }, { k: 1, t: l.slice(2), s: { color: '#ECE8E3' } }] : [{ k: 0, t: l, s: { color: '#A39C95' } }] })); }
+  blocks12() {
+    return [
+      { p: 'Now that you’ve installed Rust, it’s time to write your first Rust program. It’s traditional when learning a new language to write a little program that prints the text `Hello, world!` to the screen, so we’ll do the same here!' },
+      { note: 'This book assumes basic familiarity with the command line. Rust makes no specific demands about your editing or tooling or where your code lives, so if you prefer to use an IDE instead of the command line, feel free to use your favorite IDE. Many IDEs now have some degree of Rust support; check the IDE’s documentation for details. The Rust team has been focusing on enabling great IDE support via `rust-analyzer`. See Appendix D for more details.' },
+      { h: 'Project Directory Setup' },
+      { p: 'You’ll start by making a directory to store your Rust code. It doesn’t matter to Rust where your code lives, but for the exercises and projects in this book, we suggest making a *projects* directory in your home directory and keeping all your projects there.' },
+      { p: 'Open a terminal and enter the following commands to make a *projects* directory and a directory for the “Hello, world!” project within the *projects* directory.' },
+      { p: 'For Linux, macOS, and PowerShell on Windows, enter this:' },
+      { con: '$ mkdir ~/projects\n$ cd ~/projects\n$ mkdir hello_world\n$ cd hello_world' },
+      { tip: 'Oxide already made *~/projects* for you, and the Terminal tab opens there. You’ll use it at the end of this section.' },
+      { h: 'Rust Program Basics' },
+      { p: 'Next, make a new source file and call it *main.rs*. Rust files always end with the *.rs* extension. If you’re using more than one word in your filename, the convention is to use an underscore to separate them. For example, use *hello_world.rs* rather than *helloworld.rs*.' },
+      { p: 'Now open the *main.rs* file you just created and enter the code in Listing 1-1.' },
+      { code: 'fn main() {\n    println!("Hello, world!");\n}', file: 'Listing 1-1 · main.rs', out: ['§d$ rustc main.rs', '§d$ ./main', 'Hello, world!'] },
+      { p: 'Save the file and go back to your terminal window in the *~/projects/hello_world* directory. On Linux or macOS, enter the following commands to compile and run the file:' },
+      { con: '$ rustc main.rs\n$ ./main\nHello, world!' },
+      { p: 'Regardless of your operating system, the string `Hello, world!` should print to the terminal. If you don’t see this output, refer back to the “Troubleshooting” part of the Installation section for ways to get help.' },
+      { p: 'If `Hello, world!` did print, congratulations! You’ve officially written a Rust program. That makes you a Rust programmer—welcome!' },
+      { h: 'The Anatomy of a Rust Program' },
+      { p: 'Let’s review this “Hello, world!” program in detail. Here’s the first piece of the puzzle:' },
+      { code: 'fn main() {\n\n}', file: 'main.rs' },
+      { p: 'These lines define a function named `main`. The `main` function is special: It is always the first code that runs in every executable Rust program. Here, the first line declares a function named `main` that has no parameters and returns nothing. If there were parameters, they would go inside the parentheses (`()`).' },
+      { p: 'The function body is wrapped in `{}`. Rust requires curly brackets around all function bodies. It’s good style to place the opening curly bracket on the same line as the function declaration, adding one space in between.' },
+      { p: 'The body of the `main` function holds the following code:' },
+      { code: 'println!("Hello, world!");', file: 'main.rs' },
+      { p: 'This line does all the work in this little program: It prints text to the screen. There are three important details to notice here.' },
+      { p: 'First, `println!` calls a Rust macro. If it had called a function instead, it would be entered as `println` (without the `!`). Rust macros are a way to write code that generates code to extend Rust syntax, and we’ll discuss them in more detail in Chapter 20. For now, you just need to know that using a `!` means that you’re calling a macro instead of a normal function and that macros don’t always follow the same rules as functions.' },
+      { p: 'Second, you see the `"Hello, world!"` string. We pass this string as an argument to `println!`, and the string is printed to the screen.' },
+      { p: 'Third, we end the line with a semicolon (`;`), which indicates that this expression is over, and the next one is ready to begin. Most lines of Rust code end with a semicolon.' },
+      { end12: true }
+    ];
+  }
+  quiz() {
+    const L = window.OxLib, Q = Component.QUIZ, pk = this.state.pick, answered = pk !== null, right = pk === Q.answer;
+    return {
+      qLines: L ? L.highlight(Q.code) : [], prompt: this.fmt(Q.prompt), answered,
+      verdict: right ? 'Correct · +10 XP' : 'Not quite. The highlighted answer is right.', vc: right ? '#57D6C8' : '#FF8F98', context: this.fmt(Q.context),
+      opts: Q.opts.map((o, j) => {
+        const st = !answered ? 'idle' : j === Q.answer ? 'right' : j === pk ? 'wrong' : 'dim';
+        return {
+          k: j, segs: this.fmt(o), pick: () => { if (this.state.pick === null) this.setState({ pick: j }); }, cur: answered ? 'default' : 'pointer', op: st === 'dim' ? 0.5 : 1,
+          bd: st === 'right' ? '#57D6C8' : st === 'wrong' ? '#FF6B76' : '#2E2C2A', bg: st === 'right' ? 'rgba(87,214,200,0.08)' : st === 'wrong' ? 'rgba(255,107,118,0.08)' : 'transparent',
+          rc: st === 'right' ? '#57D6C8' : st === 'wrong' ? '#FF6B76' : '#5C5752', rf: st === 'right' ? '#57D6C8' : st === 'wrong' ? '#FF6B76' : 'transparent', icon: st === 'right' ? 'check' : st === 'wrong' ? 'close' : ''
+        };
+      })
+    };
+  }
+  renderVals() {
+    const L = window.OxLib, S = this.state, R = React;
+    const nav = (s, o) => this.props.nav && this.props.nav(s, o), tab = (t) => this.props.tab && this.props.tab(t);
+    const F = { isP: false, isH: false, isNote: false, isCode: false, isMark: false, isTry: false, isQuiz: false, isEnd: false, isTip: false, isEnd12: false };
+    const blocks = this.blocks().map((b, i) => {
+      if (b.p) return Object.assign({}, F, { k: i, isP: true, segs: this.fmt(b.p) });
+      if (b.h) return Object.assign({}, F, { k: i, isH: true, text: b.h });
+      if (b.note) return Object.assign({}, F, { k: i, isNote: true, segs: this.fmt(b.note) });
+      if (b.tip) return Object.assign({}, F, { k: i, isTip: true, segs: this.fmt(b.tip) });
+      if (b.con) return Object.assign({}, F, { k: i, isCode: true, file: 'Terminal', fails: false, canRun: false, lines: this.con(b.con), showOut: false, running: false, spin: null, out: [] });
+      if (b.end12) return Object.assign({}, F, { k: i, isEnd12: true, term: () => tab('terminal'), next: () => tab('learn') });
+      if (b.mark) return Object.assign({}, F, { k: i, isMark: true, ref: this.markRef });
+      if (b.code) {
+        const st = S.runs[i];
+        return Object.assign({}, F, { k: i, isCode: true, file: b.file, fails: !!b.fails, canRun: !!b.out, runLabel: st === 'done' ? 'Run again' : 'Run', run: () => this.run(i), lines: L ? L.highlight(b.code) : [], showOut: !!st, running: st === 'running', spin: st === 'running' && L ? L.FX.spin(R, '#A39C95', 14, 2) : null, out: st === 'done' && L ? L.out(b.out) : [] });
+      }
+      if (b.tryEx) { const ex = L && L.EX[b.tryEx]; return Object.assign({}, F, { k: i, isTry: true, name: b.tryEx, desc: this.fmt(b.desc), xp: ex ? '+' + ex.xp + ' XP' : '', go: () => nav('workspace', { arg: b.tryEx }) }); }
+      if (b.quiz) return Object.assign({}, F, { k: i, isQuiz: true }, this.quiz());
+      return Object.assign({}, F, { k: i, isEnd: true, rules: ['At any given time, you can have _either_ one mutable reference _or_ any number of immutable references.', 'References must always be valid.'].map((t, j) => ({ k: j, segs: this.fmt(t) })), practice: () => nav('workspace', { arg: 'move_semantics2' }), next: () => tab('learn') });
+    });
+    const sec = this.props.arg === '1.2'
+      ? { label: '1.2 Hello, World!', kicker: 'CHAPTER 1 · GETTING STARTED', title: 'Hello, World!', read: '8 min read', mins: 8, ch: 'Getting Started', chip: 'Try it in the Terminal', chipIcon: 'terminal', chipC: '#FF8A55', chipGo: () => tab('terminal') }
+      : { label: '4.2 References and Borrowing', kicker: 'CHAPTER 4 · UNDERSTANDING OWNERSHIP', title: 'References and Borrowing', read: '14 min read', mins: 14, ch: 'Understanding Ownership', chip: 'Rustlings: move_semantics', chipIcon: 'data_object', chipC: '#57D6C8', chipGo: () => tab('practice') };
+    const left = Math.max(1, Math.round(sec.mins * (1 - S.prog / 100)));
+    return { blocks, prog: S.prog.toFixed(1), sec, pfs: S.fs, plh: S.lh, openDisplay: () => this.props.pop && this.props.pop('display', { size: S.fs, lh: S.lh, onChange: (o) => this.setState(o) }), meta: sec.ch + ' · ' + left + ' min left', scRef: this.scRef, onScroll: this.onScroll, goBack: () => this.props.back && this.props.back(), toc: () => tab('learn'), toPractice: () => tab('practice') };
+  }
+}
+</script>
+</body>
+</html>

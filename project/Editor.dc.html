@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=JetBrains+Mono:ital,wght@0,400..700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&display=block" rel="stylesheet">
+<script src="oxide-lib.js"></script>
+<style>body{margin:0}a{color:#FF8A55}a:hover{color:#FFA070}</style>
+</helmet>
+<div style="height:100%;display:flex;flex-direction:column;background:#0F0E0E;font-family:'Public Sans',sans-serif;color:#ECE8E3">
+  <div style="height:56px;flex:none;display:flex;align-items:center;gap:2px;padding:0 10px 0 4px">
+    <button onClick="{{ goBack }}" style="width:48px;height:48px;flex:none;border:0;background:none;border-radius:24px;color:#ECE8E3;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(255,255,255,0.06)"><span style="font:24px/1 'Material Symbols Outlined';width:24px;height:24px;overflow:hidden">arrow_back</span></button>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-left:2px">
+      <span style="font:600 16px 'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fname }}</span>
+      <span style="font:400 11.5px 'JetBrains Mono',monospace;color:#8C867F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fpath }}</span>
+    </div>
+    <span style="padding:0 10px;font-size:12.5px;color:{{ savedC }};white-space:nowrap">{{ savedT }}</span>
+    <button onClick="{{ run }}" style="height:40px;flex:none;padding:0 16px 0 10px;border:0;border-radius:20px;background:#F74C00;color:#1A0B04;font:650 14px 'Public Sans',sans-serif;display:flex;align-items:center;gap:4px;cursor:pointer" style-hover="background:#FF5A10"><span style="font:22px/1 'Material Symbols Outlined';width:22px;height:22px;overflow:hidden;font-variation-settings:'FILL' 1">play_arrow</span>Run</button>
+  </div>
+  <div style="flex:none;display:flex;gap:4px;padding:0 12px;box-shadow:inset 0 -1px 0 rgba(255,255,255,0.06)">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.pick }}" style="height:44px;padding:0 12px;border:0;background:none;box-shadow:inset 0 -2px 0 {{ t.ind }};color:{{ t.c }};font:500 13px 'JetBrains Mono',monospace;cursor:pointer">{{ t.t }}</button></sc-for>
+  </div>
+  <div style="flex:1;min-height:0;position:relative">
+    <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}"><dc-import name="CodeEditor" code="{{ code }}" on-change="{{ onCode }}" kbd="auto" pad-bottom="24" style="position:absolute;top:0;left:0;right:0;bottom:0" hint-size="100%,100%"></dc-import></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { file: this.props.variant === 'Cargo.toml' ? 'Cargo.toml' : 'src/main.rs', files: null, saved: true };
+  componentDidMount() {
+    if (window.OxLib) this.load();
+    else { this._h = () => this.load(); window.addEventListener('oxlib-ready', this._h); }
+  }
+  componentWillUnmount() { clearTimeout(this._t); if (this._h) window.removeEventListener('oxlib-ready', this._h); }
+  name() { return this.props.arg || 'guessing_game'; }
+  root() { return '~/projects/' + this.name(); }
+  term() { return window.__oxTerm && window.__oxTerm[this.props.sid]; }
+  store() { const W = window.__oxP = window.__oxP || {}, k = this.props.sid || 'x'; return W[k] = W[k] || { files: {}, deleted: {} }; }
+  load() {
+    const L = window.OxLib, n = this.name(), r = this.root(), T = this.term();
+    const def = n === 'guessing_game' ? { 'src/main.rs': L.GUESS.main, 'Cargo.toml': L.GUESS.toml } : { 'src/main.rs': L.HELLO_RS, 'Cargo.toml': L.newToml(n) };
+    const fromT = T && T.st.fs[r] && T.st.fs[r + '/src'] ? { 'src/main.rs': T.st.fs[r + '/src'].f['main.rs'], 'Cargo.toml': T.st.fs[r].f['Cargo.toml'] } : {};
+    this.setState({ files: Object.assign({}, def, this.store().files[n] || {}, fromT) });
+  }
+  onCode = (v) => {
+    const f = this.state.file, n = this.name(), r = this.root(), Pst = this.store(), T = this.term();
+    Pst.files[n] = Object.assign({}, Pst.files[n] || {}, { [f]: v });
+    if (T && T.st.fs[r]) { if (f === 'src/main.rs') { if (T.st.fs[r + '/src']) T.st.fs[r + '/src'].f['main.rs'] = v; } else T.st.fs[r].f['Cargo.toml'] = v; }
+    this.setState(s => ({ files: Object.assign({}, s.files, { [f]: v }), saved: false }));
+    clearTimeout(this._t); this._t = setTimeout(() => this.setState({ saved: true }), 600);
+  };
+  run = () => {
+    const P = this.props, cmds = ['cd ' + this.root(), 'cargo run'], T = this.term();
+    if (T) { T.pending = cmds; if (P.from === 'terminal') { if (P.back) P.back(); } else if (P.nav) P.nav('terminal'); }
+    else if (P.nav) P.nav('terminal', { variant: 'cmd', arg: cmds.join(' && ') });
+  };
+  renderVals() {
+    const S = this.state, f = S.file;
+    return {
+      ready: !!S.files, code: S.files ? S.files[f] : '', onCode: this.onCode, run: this.run,
+      fname: f.slice(f.lastIndexOf('/') + 1), fpath: this.root() + '/' + f,
+      savedT: S.saved ? 'Saved' : 'Saving…', savedC: S.saved ? '#8C867F' : '#FF8A55',
+      tabs: ['src/main.rs', 'Cargo.toml'].map(t => ({ k: t, t, pick: () => this.setState({ file: t }), ind: t === f ? '#F74C00' : 'transparent', c: t === f ? '#ECE8E3' : '#A39C95' })),
+      goBack: () => this.props.back && this.props.back()
+    };
+  }
+}
+</script>
+</body>
+</html>
