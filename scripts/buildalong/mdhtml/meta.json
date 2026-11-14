@@ -1,0 +1,58 @@
+{
+  "title": "Markdown to HTML",
+  "summary": "Turn Markdown notes into HTML: headings, paragraphs, emphasis, inline code, lists and code blocks. You’ll walk through strings and slices, return borrowed text, and model a document with an enum.",
+  "after": "10.3",
+  "run": "cargo run -- notes.md",
+  "smoke": { "args": ["notes.md"], "expect": "<h1>Notes on ownership</h1>" },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "Escape HTML",
+      "build": "`escape` replaces `&`, `<`, `>` and `\"` with their HTML entities. Loop over `chars()` and push onto a new `String`.",
+      "section": "8.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m2",
+      "title": "Headings",
+      "build": "`heading` recognises `## Title`: one to six `#`s and a space. It returns the level and a `&str` slice of the line, borrowed rather than copied.",
+      "section": "4.3",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m3",
+      "title": "Emphasis and code",
+      "build": "`inline` turns `**strong**`, `*em*` and code between backticks into tags and escapes the rest. Walk the text with a `rest` slice, use `find` to look for the closing marker, and call `inline` again for the text between strong or em markers.",
+      "section": "8.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m4",
+      "title": "Paragraphs and headings",
+      "build": "`parse` goes line by line and collects `Block`s. Gather text lines until a blank line or a heading, then push a `Paragraph` of the lines joined with spaces.",
+      "section": "6.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m5",
+      "title": "Lists",
+      "build": "Lines that start with `- ` or `* ` become items of a `List`. A blank line or a text line ends the list. `*so* important` isn’t an item: the `*` has no space after it.",
+      "section": "8.1",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m6",
+      "title": "Code blocks",
+      "build": "A line starting with three backticks opens a code block, and the next such line closes it. Keep the lines inside exactly as they are. An `Option<…>` for “am I inside a fence?” keeps the state in one place.",
+      "section": "6.3",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m7",
+      "title": "Write HTML",
+      "build": "`render` turns each block into HTML with a `match`, and `to_html` ties it together. Then convert the sample: `cargo run -- notes.md`.",
+      "section": "6.2",
+      "files": ["src/lib.rs", "src/main.rs", "notes.md"]
+    }
+  ]
+}

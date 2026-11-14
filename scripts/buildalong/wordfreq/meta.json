@@ -1,0 +1,51 @@
+{
+  "title": "Word frequency counter",
+  "summary": "Count the words in any text and draw a bar chart of the most common ones. You’ll work with strings and chars, a HashMap, sorting with a comparison, and formatted output.",
+  "after": "8.3",
+  "run": "cargo run -- Cargo.toml",
+  "smoke": { "args": [], "stdin": "the cat and the hat\nthe end\n\n", "expect": "7 words, 5 different" },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "Split into words",
+      "build": "`words` splits a text into lowercase words. Letters, digits and apostrophes make up a word; anything else separates words. Trim apostrophes off the ends.",
+      "section": "8.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m2",
+      "title": "Count them",
+      "build": "`count` builds a `HashMap` from each word to how often it appears. The `entry(…).or_insert(0)` pattern from the Book does exactly this.",
+      "section": "8.3",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m3",
+      "title": "The most frequent",
+      "build": "`top` collects the map into a `Vec`, sorts it by count (largest first) and then by word, and keeps the first `n`. `sort_by` with `cmp(…).then_with(…)` does both orders at once.",
+      "section": "8.1",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m4",
+      "title": "Stop words",
+      "build": "`remove_stop_words` takes common words like `the` and `and` out of the counts. It borrows the map mutably, so the caller’s map changes.",
+      "section": "4.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m5",
+      "title": "Stats",
+      "build": "`stats` fills in a `Stats` struct: total words, different words and the longest word. Count characters with `chars().count()`, not `len()`, which counts bytes.",
+      "section": "5.1",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m6",
+      "title": "A bar chart",
+      "build": "`histogram` draws one line per word. `format!(\"{w:<pad$}\")` pads to a width you choose at run time, and `\"#\".repeat(n)` draws the bar. Then run it: `cargo run -- Cargo.toml`.",
+      "section": "8.2",
+      "files": ["src/lib.rs", "src/main.rs"]
+    }
+  ]
+}

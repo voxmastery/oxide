@@ -1,0 +1,58 @@
+{
+  "title": "Bank account ledger",
+  "summary": "Accounts that keep a history, a bank that holds many of them, and transfers that either fully happen or change nothing. You’ll use structs with methods, enums with data, and Result for every way it can go wrong.",
+  "after": "9.2",
+  "run": "cargo run",
+  "smoke": { "args": [], "stdin": "open Ada\nopen Grace\ndeposit 1 12.50\ntransfer 1 2 2.25\nshow 1\nquit\n", "expect": "Ada: 10.25" },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "An account",
+      "build": "Fill in `Account::new`, `owner`, `balance` and `deposit`. Balances are whole cents in an `i64`, so 12.50 is `1250`.",
+      "section": "5.3",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m2",
+      "title": "Errors with Result",
+      "build": "Reject amounts of zero or less with `BankError::InvalidAmount`, and add `withdraw`, which refuses to go below zero with `InsufficientFunds`. A failed call changes nothing.",
+      "section": "9.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m3",
+      "title": "A history",
+      "build": "Record every deposit and withdrawal that worked as a `Transaction` and return them from `history`. Failed attempts leave no trace.",
+      "section": "6.1",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m4",
+      "title": "Many accounts",
+      "build": "`Bank` keeps accounts in a `HashMap` by id. Write `open`, `account`, `deposit`, `withdraw` and `total`. `get_mut(&id).ok_or(…)?` turns a missing account into an error in one line.",
+      "section": "8.3",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m5",
+      "title": "Transfers",
+      "build": "`transfer` moves money from one account to another, all or nothing. Check the ids and the amount before you touch a balance, and use `?` to pass errors on.",
+      "section": "9.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m6",
+      "title": "Money as text",
+      "build": "`format_cents` turns `-250` into `-2.50`. Then implement `Display` for `Account` (`Ada: 12.50`) and for `BankError`, so errors read well when printed.",
+      "section": "10.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m7",
+      "title": "A statement",
+      "build": "`statement` lists the history as `+12.50` and `-3.00` lines, then the balance. Map over the history with an iterator and `join` the lines. Then try it: `cargo run`.",
+      "section": "13.2",
+      "files": ["src/lib.rs", "src/main.rs"]
+    }
+  ]
+}

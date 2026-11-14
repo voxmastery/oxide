@@ -1,0 +1,58 @@
+{
+  "title": "Game of Life",
+  "summary": "Conway’s Game of Life, printed in the terminal. You’ll store a grid in a Vec, read it from a picture, implement Display, and find patterns that repeat.",
+  "after": "10.2",
+  "run": "cargo run",
+  "smoke": { "args": [], "expect": "It repeats every 32 generations." },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "A grid",
+      "build": "Store the cells in one `Vec<bool>`, row by row: cell (x, y) is at `y * width + x`. Fill in `new`, `width`, `height`, `get`, `set` and `population`. Anything outside the grid is dead.",
+      "section": "8.1",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m2",
+      "title": "Read a picture",
+      "build": "`Grid::parse` reads rows of `#` and `.`. Every row must be as wide as the first; report the first problem as a `ParseError` with its line number.",
+      "section": "9.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m3",
+      "title": "Print it",
+      "build": "Implement `Display` for `Grid` so `println!(\"{grid}\")` and `to_string()` draw the same picture `parse` reads. `write!` and `writeln!` write into the formatter.",
+      "section": "10.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m4",
+      "title": "Neighbours",
+      "build": "`live_neighbours` counts the live cells among the eight around a cell. Working in `isize` makes the `-1` offsets easy; skip anything outside the grid.",
+      "section": "3.5",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m5",
+      "title": "The next generation",
+      "build": "`step` builds the next grid from the rules: two or three neighbours keep a cell alive, exactly three bring one to life. Read from `self` and write into a new grid.",
+      "section": "5.3",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m6",
+      "title": "Wrap around",
+      "build": "`with_wrap(true)` turns the grid into a torus: a glider leaving on the right comes back on the left. `rem_euclid` wraps `-1` to the last column.",
+      "section": "3.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m7",
+      "title": "Oscillators",
+      "build": "`period` steps forward until the grid matches where it started. A block has period 1, a blinker 2. Then watch it run: `cargo run`.",
+      "section": "5.3",
+      "files": ["src/lib.rs", "src/main.rs"]
+    }
+  ]
+}

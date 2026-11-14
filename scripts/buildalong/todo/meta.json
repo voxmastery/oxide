@@ -1,0 +1,58 @@
+{
+  "title": "A to-do list for the terminal",
+  "summary": "A small command-line to-do list that keeps its tasks in a text file. You’ll model tasks with a struct, handle mistakes with Result, read and write a file, and parse the command line.",
+  "after": "9.2",
+  "run": "cargo run -- add Buy oat milk",
+  "smoke": { "args": ["add", "Buy", "oat", "milk"], "expect": "Added 1: Buy oat milk" },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "A list of tasks",
+      "build": "Fill in `TodoList::new`, `add` and `tasks`. Keep the tasks in the `Vec` and hand out ids from `next_id`, starting at 1. Trim the text before you store it.",
+      "section": "5.1",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m2",
+      "title": "Done, remove, pending",
+      "build": "Write `complete`, `remove` and `pending`. When no task has the id, return `Err(TodoError::NotFound(id))`. `iter_mut().find(…)` and `position(…)` are handy here.",
+      "section": "9.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m3",
+      "title": "One task per line",
+      "build": "Turn a task into a line of text and back: `[ ] 1 Buy oat milk` or `[x] 2 Call mum`. `from_line` returns `None` for anything else. Try `strip_prefix` and `split_once`.",
+      "section": "8.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m4",
+      "title": "The whole list as text",
+      "build": "`to_text` writes every task’s line followed by a newline. `from_text` reads them back, skips blank lines, reports the first bad line by number, and sets `next_id` after the largest id.",
+      "section": "9.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m5",
+      "title": "Save to a file",
+      "build": "`save` writes `to_text()` with `fs::write`. `load` reads it with `fs::read_to_string`; a file that isn’t there yet is an empty list, and other I/O errors become `TodoError::Io`.",
+      "section": "12.2",
+      "files": ["src/lib.rs"]
+    },
+    {
+      "id": "m6",
+      "title": "Read the command line",
+      "build": "`parse_args` turns `add Buy oat milk`, `done 2`, `rm 2` and `list` into a `Command`. Matching on a slice pattern like `[cmd, rest @ ..]` keeps it short. Anything else is a `Usage` error.",
+      "section": "12.1",
+      "files": ["src/lib.rs", "src/main.rs"]
+    },
+    {
+      "id": "m7",
+      "title": "Run a command",
+      "build": "`run` applies a `Command` and returns the line to print. Then try it for real: `cargo run -- add Buy oat milk`, `cargo run -- done 1`, `cargo run`.",
+      "section": "12.3",
+      "files": ["src/lib.rs", "src/main.rs"]
+    }
+  ]
+}
