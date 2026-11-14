@@ -12,6 +12,7 @@ import { SCREENS } from '../screens/registry';
 import { OverlayHost } from '../overlays/OverlayHost';
 import { useNet } from './net';
 import { useApp } from '../state/app';
+import { useCelebrations } from '../overlays/useCelebrations';
 
 /** On web we draw the prototype's device chrome so screenshots match the design 1:1. */
 export const FRAME = Platform.OS === 'web';
@@ -92,6 +93,7 @@ export function Shell() {
   const onboarded = useApp((s) => s.onboarded);
   const offline = useNet((s) => s.offline);
   const insets = useSafeAreaInsets();
+  useCelebrations();
   const top = stack[stack.length - 1];
 
   // First run: start in onboarding until the plan is set.

@@ -33,7 +33,8 @@ export function levelOf(xp: number) {
   const cur = LEVELS[i];
   const nxt = LEVELS[i + 1];
   const to = nxt ? nxt.from : cur.from + 2000;
-  return { level: cur.lv, title: cur.title, from: cur.from, to, frac: (xp - cur.from) / (to - cur.from), toNext: to - xp, nextLv: cur.lv + 1, nextFrom: to, nextTo: LEVELS[i + 2]?.from, blurb: nxt ? LEVELS[i + 1].next : cur.next };
+  return { level: cur.lv, title: cur.title, from: cur.from, to, /** The design's XP bars show total XP against the next threshold (1,840 / 2,400). */
+    frac: xp / to, toNext: to - xp, nextLv: cur.lv + 1, nextFrom: to, nextTo: LEVELS[i + 2]?.from, blurb: nxt ? LEVELS[i + 1].next : cur.next };
 }
 
 // ---------- Dates, streak ----------
