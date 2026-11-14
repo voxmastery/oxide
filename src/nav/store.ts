@@ -6,7 +6,9 @@ import { create } from 'zustand';
 
 export type ScreenName =
   | 'home' | 'learn' | 'reader' | 'search' | 'practice' | 'workspace' | 'project'
-  | 'terminal' | 'editor' | 'profile' | 'settings' | 'account' | 'onboarding';
+  | 'terminal' | 'editor' | 'profile' | 'settings' | 'account' | 'onboarding'
+  // Engagement features (docs/FEATURES_BRIEF.md)
+  | 'bughunt' | 'review' | 'collection' | 'journal' | 'league' | 'buildalong' | 'badges';
 
 export type TabId = 'home' | 'learn' | 'practice' | 'terminal' | 'profile';
 
@@ -38,6 +40,9 @@ export const TAB_OF: Record<ScreenName, TabId | null> = {
   terminal: 'terminal', editor: 'terminal',
   profile: 'profile', settings: 'profile', account: 'profile',
   onboarding: null,
+  bughunt: 'home', review: 'home', league: 'home',
+  collection: 'profile', journal: 'profile', badges: 'profile',
+  buildalong: 'practice',
 };
 export const TAB_ROOTS: ScreenName[] = ['home', 'learn', 'practice', 'terminal', 'profile'];
 /** Full-screen moments cover everything below the status bar. */

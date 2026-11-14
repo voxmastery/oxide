@@ -14,6 +14,13 @@ import Profile from './ProfileScreen';
 import Settings from './SettingsScreen';
 import Account from './AccountScreen';
 import Onboarding from './OnboardingScreen';
+import BugHunt from './BugHuntScreen';
+import Review from './ReviewScreen';
+import Collection from './CollectionScreen';
+import Journal from './JournalScreen';
+import League from './LeagueScreen';
+import BuildAlong from './BuildAlongScreen';
+import Badges from './BadgesScreen';
 
 export type ScreenProps = { entry: Entry };
 
@@ -21,4 +28,5 @@ export const SCREENS: Record<ScreenName, React.ComponentType<ScreenProps>> = {
   home: Home, learn: Learn, reader: Reader, search: Search, practice: Practice, workspace: Workspace,
   project: Project, terminal: Terminal, editor: Editor, profile: Profile, settings: Settings,
   account: Account, onboarding: Onboarding,
+  bughunt: BugHunt, review: Review, collection: Collection, journal: Journal, league: League, buildalong: BuildAlong, badges: Badges,
 };
