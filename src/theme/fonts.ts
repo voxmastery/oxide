@@ -61,7 +61,7 @@ export function mono(weight: Weight = 400, italic = false): TextStyle {
     : weight === 600 || weight === 650 ? 'JetBrainsMono_600SemiBold'
     : 'JetBrainsMono_700Bold';
   // Ligatures off for code everywhere (spec: font-variant-ligatures: none).
-  return { fontFamily: f, fontVariant: [] };
+  return { fontFamily: f, fontVariant: ['no-common-ligatures', 'no-contextual'] };
 }
 
 /** Text style shorthand: t(size, lineHeightMultiplier?, weight?, color?) */
