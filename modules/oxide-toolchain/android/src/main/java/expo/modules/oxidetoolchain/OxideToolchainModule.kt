@@ -159,10 +159,16 @@ class OxideToolchainModule : Module() {
      * argv[0] is a tool name ("cargo", "rustc", "rustfmt", "rust-lld", "clippy-driver") or an
      * absolute path inside the native library dir. env is added to the base environment.
      */
+    /** Switch cargo between crates.io (online) and the vendored crates (offline). */
+    Function("setOnline") { online: Boolean ->
+      if (layout.dataInstalled) layout.writeCargoConfig(online) else layout.online = online
+    }
+
     Function("spawn") { argv: List<String>, cwd: String, env: Map<String, String> ->
       if (argv.isEmpty()) throw CodedException("ERR_ARGV", "empty command", null)
       val exe = layout.tool(argv[0])
         ?: File(argv[0]).takeIf { it.isAbsolute && it.canonicalPath.startsWith(layout.nativeLibDir.canonicalPath) }
+        ?: File(argv[0]).takeIf { it.isAbsolute && (it.canonicalPath.startsWith("/system/bin/") || it.canonicalPath.startsWith("/system/xbin/")) }
         ?: throw CodedException("ERR_NOT_A_TOOL", "${argv[0]}: not a toolchain program", null)
       if (!exe.isFile) throw ToolchainNotInstalledException("${exe.name} is missing from ${layout.nativeLibDir}")
       val id = "h" + nextId.getAndIncrement()

@@ -27,6 +27,7 @@ import type {
   ToolchainPaths,
 } from './types';
 import { MESSAGE_NOT_INSTALLED, UnavailableToolchain } from './unavailable';
+import { useNet } from '../shell/net';
 
 type Module = NonNullable<typeof OxideToolchainType>;
 
@@ -103,6 +104,8 @@ class NativeBackend implements Backend {
 
   host(argv: string[], cwd: string, env: Record<string, string>, onLine: LineFn): ChildHandle {
     try {
+      // cargo uses crates.io while online and the vendored crates offline.
+      if (argv[0] === 'cargo') this.mod.setOnline?.(!useNet.getState().offline);
       return this.attach(this.mod.spawn(argv, cwd, env), onLine);
     } catch (e) {
       return this.failed(`${argv[0]}: ${e instanceof Error ? e.message : String(e)}`, onLine);
@@ -158,7 +161,7 @@ export class NativeToolchain implements Toolchain {
   }
 
   private ctx(i: NativeToolchainInfo): CargoContext {
-    return { nld: i.nativeLibraryDir, target: i.target, exists: fsx.exists, readText: fsx.readText };
+    return { nld: i.nativeLibraryDir, target: i.target, home: this.paths.home, exists: fsx.exists, readText: fsx.readText };
   }
 
   // ---- install ----
@@ -259,6 +262,10 @@ export class NativeToolchain implements Toolchain {
 
   spawn(argv: string[], opts: RunOptions): Proc {
     const env = opts.env ?? {};
+    // Android's shell and toybox tools don't need the Rust toolchain.
+    if (argv[0] === 'sh') {
+      return scriptProc(this.backend, opts.onEvent, async (s) => (await s.host(argv, opts.cwd, env)).code, opts.onWaitingForInput);
+    }
     return this.proc(opts.onEvent, (s, i) => runCommand(s, this.ctx(i), argv, opts.cwd, env), opts.onWaitingForInput);
   }
 

@@ -18,6 +18,8 @@ export type CargoContext = {
   nld: string;
   /** "wasm32-wasip1-threads" */
   target: string;
+  /** ~ (absolute). `cargo install` puts programs in ~/.cargo/bin. */
+  home: string;
   exists(path: string): boolean;
   readText(path: string): string | null;
 };
@@ -361,6 +363,31 @@ export async function runProgram(s: Session, ctx: CargoContext, argv: string[], 
   return r.code;
 }
 
+/**
+ * `cargo install <crate>`: builds the crate for WebAssembly (the configured build target) and
+ * installs it into ~/.cargo/bin as <name>.wasm, where the Terminal finds it by name.
+ * Needs a connection for crates that aren't vendored.
+ */
+async function cargoInstall(s: Session, ctx: CargoContext, args: string[], cwd: string, env: Record<string, string>): Promise<number> {
+  const root = installRoot(ctx);
+  const extra = args.some((a) => a === '--root' || a.startsWith('--root=')) ? [] : ['--root', root];
+  const r = await s.host(['cargo', 'install', ...extra, ...args], cwd, env);
+  if (r.code === 0) s.out('§dInstalled programs run by name, e.g. `' + (args.find((a) => !a.startsWith('-')) ?? 'name') + '`. They live in ~/.cargo/bin.');
+  return r.code;
+}
+
+/** Where `cargo install` puts programs: ~/.cargo (so ~/.cargo/bin/<name>.wasm). */
+export function installRoot(ctx: CargoContext): string {
+  return `${ctx.home.replace(/\/+$/, '')}/.cargo`;
+}
+
+/** A program installed with `cargo install`, by command name. */
+export function installedProgram(ctx: CargoContext, name: string): string | null {
+  if (!/^[A-Za-z0-9_.-]+$/.test(name)) return null;
+  const p = `${installRoot(ctx)}/bin/${name}.wasm`;
+  return ctx.exists(p) ? p : null;
+}
+
 export function isProgramPath(cmd: string): boolean {
   return cmd.startsWith('./') || cmd.startsWith('../') || cmd.startsWith('/') || cmd.startsWith('target/');
 }
@@ -385,8 +412,7 @@ export async function runCommand(s: Session, ctx: CargoContext, argv: string[], 
       case 'fmt':
         return cargoFmt(s, args, cwd, env);
       case 'install':
-        s.err(cargoError('`cargo install` builds native programs, which Android does not let apps run. Use `cargo run` in a project instead.'));
-        return 101;
+        return cargoInstall(s, ctx, args, cwd, env);
       default:
         return (await s.host(['cargo', ...rest], cwd, env)).code;
     }
@@ -398,6 +424,8 @@ export async function runCommand(s: Session, ctx: CargoContext, argv: string[], 
   }
   if (cmd === 'clippy-driver' || cmd === 'rust-lld') return (await s.host(argv, cwd, env)).code;
   if (isProgramPath(cmd)) return runProgram(s, ctx, argv, cwd, env);
+  const installed = installedProgram(ctx, cmd);
+  if (installed) return (await s.wasm(installed, argv, cwd, env)).code;
   s.err(`bash: ${cmd}: command not found`);
   return 127;
 }

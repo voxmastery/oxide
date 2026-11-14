@@ -1,6 +1,7 @@
 // The Terminal's shell: parsing, built-ins over src/fs, and real cargo/rustc runs through the toolchain.
 // Built-ins (ls, cd, cat, cargo new, rustc --explain, rustlings hint…) work offline and on web;
 // compiling and running go to `getToolchain().spawn` and stream their output verbatim.
+import { Platform } from 'react-native';
 import * as fs from '../../fs';
 import { errors, rustlings } from '../../content';
 import { getToolchain } from '../../toolchain';
@@ -163,6 +164,13 @@ export function submit(raw: string): Promise<void> {
 
 async function runLine(t: string) {
   const segs = parse(t);
+  if (segs === 'pipes' && Platform.OS === 'android') {
+    // Pipes go to Android's own shell (sh + toybox: grep, sed, sort, wc, find…).
+    const id = term.addBlock(t);
+    await spawnCmd(id, ['sh', '-c', t], Date.now(), false);
+    extraListeners.forEach((l) => l());
+    return;
+  }
   if (typeof segs === 'string') {
     const id = term.addBlock(t);
     term.finish(id, [segs === 'pipes' ? errLine('Pipes (|) aren’t supported in this terminal yet.') : segs], segs === 'pipes' ? 1 : 2);
@@ -253,6 +261,10 @@ async function dispatch(id: number, s: Seg, t0: number): Promise<number> {
     case 'rustlings': r = await rustlingsCmd(a.slice(1), t0); break;
     default:
       if (c.startsWith('./') || c.startsWith('/') || c.startsWith('../')) return spawnCmd(id, a, t0);
+      // Programs installed with `cargo install` run by name.
+      if (/^[A-Za-z0-9_.-]+$/.test(c) && (await fs.exists(`~/.cargo/bin/${c}.wasm`))) return spawnCmd(id, a, t0);
+      // Everything else goes to Android's shell and its toybox tools.
+      if (Platform.OS === 'android') return spawnCmd(id, ['sh', '-c', s.raw], t0, false);
       r = { lines: [`bash: ${c}: command not found`], code: 127 };
   }
   if (s.out && r) {
@@ -283,6 +295,9 @@ function help(): Res {
       '  §orustlings§n run, hint [exercise]',
       '  §oedit§n src/main.rs, opens it in the editor',
       '  §ols  cd  pwd  cat  echo  mkdir  rm  history  clear',
+      '  §ocargo install§n <crate>   installs a Rust program; run it by name',
+      '  §ocargo add§n <crate>       adds a dependency (needs a connection)',
+      ...(Platform.OS === 'android' ? ['  §ogrep  sed  sort  wc  find  …§n and pipes, from Android’s shell'] : []),
       '',
       { w: '§dTab completes names. ↑ brings back earlier commands.' },
     ],
@@ -625,9 +640,9 @@ async function packageName(root: string | null): Promise<string | null> {
   } catch { return null; }
 }
 
-async function spawnCmd(id: number, argv: string[], t0: number): Promise<number> {
+async function spawnCmd(id: number, argv: string[], t0: number, needsRust = true): Promise<number> {
   const info = await toolchainInfo();
-  if (!usable(info)) {
+  if (needsRust && !usable(info)) {
     term.finish(id, [errLine(unavailable(info))], 1);
     return 1;
   }
@@ -635,7 +650,7 @@ async function spawnCmd(id: number, argv: string[], t0: number): Promise<number>
   const cwd = s.cwd;
   const isCargoRun = argv[0] === 'cargo' && (argv[1] === 'run' || argv[1] === 'r');
   const direct = argv[0].startsWith('./') || argv[0].startsWith('/') || argv[0].startsWith('../');
-  const name = direct ? fs.basename(argv[0]) : isCargoRun ? (await packageName(s.root.path)) ?? 'cargo' : argv.slice(0, 2).join(' ');
+  const name = argv[0] === 'sh' ? (argv[2] ?? 'sh').trim().split(/\s+/)[0] : direct ? fs.basename(argv[0]) : isCargoRun ? (await packageName(s.root.path)) ?? 'cargo' : argv.slice(0, 2).join(' ');
 
   let buf: Line[] = [];
   let timer: ReturnType<typeof setTimeout> | null = null;

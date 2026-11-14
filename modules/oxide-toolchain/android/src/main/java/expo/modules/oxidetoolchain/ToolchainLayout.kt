@@ -37,6 +37,8 @@ class ToolchainLayout(context: Context) {
 
   /** Tool name as typed → file in nativeLibraryDir. */
   fun tool(name: String): File? {
+    // Android's own shell and toybox tools are system programs: apps may run them.
+    if (name == "sh") return File("/system/bin/sh")
     val file = when (name) {
       "cargo" -> "libcargo.so"
       // Always go through the sysroot wrapper.
@@ -101,7 +103,14 @@ class ToolchainLayout(context: Context) {
    * $CARGO_HOME/config.toml. The native library dir contains a random component that changes
    * whenever the app is updated, so this is rewritten on every start.
    */
-  fun writeCargoConfig() {
+  /**
+   * Online: cargo uses crates.io (cargo add / cargo install / any dependency), caching downloads
+   * in CARGO_HOME. Offline: cargo resolves only from the vendored crates in the payload.
+   */
+  @Volatile var online: Boolean = false
+
+  fun writeCargoConfig(online: Boolean = this.online) {
+    this.online = online
     cargoHome.mkdirs()
     val nld = nativeLibDir.absolutePath
     val target = wasmTarget
@@ -123,14 +132,14 @@ class ToolchainLayout(context: Context) {
       |[target.$HOST_TARGET]
       |linker = ${toml("$nld/liboxide-cc.so")}
       |
-      |[source.crates-io]
-      |replace-with = "oxide-vendored"
-      |
-      |[source.oxide-vendored]
-      |directory = ${toml(vendorDir.absolutePath)}
-      |
+      |${if (online) "" else "[source.crates-io]\n      |replace-with = \"oxide-vendored\"\n      |\n      |[source.oxide-vendored]\n      |directory = ${toml(vendorDir.absolutePath)}\n      |"}
       |[net]
-      |offline = true
+      |offline = ${!online}
+      |git-fetch-with-cli = false
+      |
+      |[http]
+      |# Android's system CA certificates, combined into one PEM file.
+      |cainfo = ${toml(caBundle().absolutePath)}
       |
       |[term]
       |color = "always"
@@ -140,6 +149,22 @@ class ToolchainLayout(context: Context) {
       |""".trimMargin()
     val file = File(cargoHome, "config.toml")
     if (!file.isFile || file.readText() != text) file.writeText(text)
+  }
+
+  /** Concatenate Android's system CA certificates into one PEM file for cargo's HTTP client. */
+  private fun caBundle(): File {
+    val out = File(cargoHome, "cacert.pem")
+    if (out.isFile && out.length() > 0) return out
+    val dir = File("/system/etc/security/cacerts")
+    val sb = StringBuilder()
+    dir.listFiles()?.sortedBy { it.name }?.forEach { f ->
+      val text = runCatching { f.readText() }.getOrNull() ?: return@forEach
+      val begin = text.indexOf("-----BEGIN CERTIFICATE-----")
+      val end = text.indexOf("-----END CERTIFICATE-----")
+      if (begin >= 0 && end > begin) sb.append(text, begin, end + 25).append('\n')
+    }
+    out.writeText(sb.toString())
+    return out
   }
 
   private fun toml(s: String): String = "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""

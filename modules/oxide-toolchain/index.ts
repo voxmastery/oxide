@@ -30,6 +30,8 @@ declare class OxideToolchainModule extends NativeModule<OxideToolchainEvents> {
   pauseInstall(): void;
   fetchManifest(manifestUrl: string): Promise<NativeManifestInfo>;
   isMetered(): boolean;
+  /** Point cargo at crates.io (true) or at the vendored crates (false). */
+  setOnline?(online: boolean): void;
 
   /** argv[0]: "cargo" | "rustc" | "rustfmt" | "rust-lld" | "clippy-driver". Returns a process id. */
   spawn(argv: string[], cwd: string, env: Record<string, string>): string;
