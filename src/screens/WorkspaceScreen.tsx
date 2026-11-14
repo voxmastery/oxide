@@ -23,6 +23,9 @@ import { exerciseMeta, fmtDuration, hintsFor, solutionUnlocked } from './workspa
 import { ExplainPanel, HintsPanel, OutputPanel, SolutionPanel } from './workspace/panels';
 import { Tour } from './workspace/Tour';
 import { Success, type SuccessInfo } from './workspace/Success';
+import { FerrisBubble } from '../features/ferris';
+import { checkReaction } from '../features/ferris/react';
+import { fmtRunTime, SpeedRunResult, SpeedTimer, useSpeedrun, type SpeedResult } from '../features/speedrun';
 
 type Tab = 'out' | 'explain' | 'hints' | 'solution';
 type Status = 'idle' | 'compiling' | 'pass' | 'error' | 'panic' | 'unavailable' | 'ran' | 'runfail';
@@ -41,7 +44,8 @@ export default function WorkspaceScreen({ entry }: ScreenProps) {
       </View>
     );
   }
-  return <Workspace key={name} meta={meta} entry={entry} />;
+  // Keyed by entry too, so "Run again" on a speed run starts fresh.
+  return <Workspace key={`${name}:${entry.variant === 'speedrun' ? entry.key : ''}`} meta={meta} entry={entry} />;
 }
 
 function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerciseMeta>>; entry: ScreenProps['entry'] }) {
@@ -55,8 +59,19 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
   const tourSeen = useApp((s) => s.tourSeen);
   const attempts = st?.attempts ?? 0;
   const hintsShown = st?.hints ?? 0;
+  // Speed run (docs/FEATURES_BRIEF.md, agent 5): from the original file, timed from the first edit to
+  // the passing Check. The user's saved code and the exercise's progress are left alone.
+  const speed = entry.variant === 'speedrun';
+  const bestMs = useSpeedrun((s) => s.best[name]?.ms ?? null);
+  const [runStart, setRunStart] = useState<number | null>(null);
+  const [runMs, setRunMs] = useState<number | null>(null);
+  const [speedResult, setSpeedResult] = useState<SpeedResult | null>(null);
+  const assisted = useRef(false);
+  const recorded = useRef<SpeedResult | null>(null);
+  const checkAt = useRef(0);
+  const [speedFails, setSpeedFails] = useState(0);
 
-  const [code, setCode] = useState(() => useApp.getState().ex[name]?.code ?? ex.code);
+  const [code, setCode] = useState(() => (speed ? ex.code : useApp.getState().ex[name]?.code ?? ex.code));
   const [status, setStatus] = useState<Status>('idle');
   const [mode, setMode] = useState<'check' | 'run'>('check');
   const [result, setResult] = useState<CheckResult | null>(null);
@@ -66,7 +81,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
   const [tab, setTab] = useState<Tab>('out');
   const [kbd, setKbd] = useState(false);
   const [size, setSize] = useState({ w: 412, h: REF_H });
-  const [tour, setTour] = useState(tourSeen ? -1 : 0);
+  const [tour, setTour] = useState(tourSeen || speed ? -1 : 0);
   const [success, setSuccess] = useState<SuccessInfo | null>(null);
   const [beforeApply, setBeforeApply] = useState<string | null>(null);
   const editor = useRef<CodeEditorHandle>(null);
@@ -80,17 +95,19 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
   latest.current = code;
   useEffect(() => () => {
     clearTimeout(saveTimer.current);
+    proc.current?.kill();
+    if (speed) return;
     const cur = useApp.getState().ex[name]?.code ?? ex.code;
     if (latest.current !== cur) useApp.getState().exPatch(name, { code: latest.current });
-    proc.current?.kill();
-  }, [name, ex.code]);
+  }, [name, ex.code, speed]);
   const onCode = useCallback((v: string) => {
     setCode(v);
     setDirty(true);
+    if (speed) { setRunStart((t0) => t0 ?? Date.now()); return; }
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => useApp.getState().exPatch(name, { code: v }), 500);
-  }, [name]);
-  const setCodeNow = (v: string) => { setCode(v); setDirty(true); clearTimeout(saveTimer.current); useApp.getState().exPatch(name, { code: v }); };
+  }, [name, speed]);
+  const setCodeNow = (v: string) => { setCode(v); setDirty(true); clearTimeout(saveTimer.current); if (!speed) useApp.getState().exPatch(name, { code: v }); };
 
   // ---- Sheet ----
   const scale = Math.min(1, size.h / REF_H);
@@ -145,6 +162,10 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
   const scrollLine = marks.find((x) => x.kind !== 'warn')?.line ?? marks[0]?.line;
   const hints = useMemo(() => hintsFor(ex), [ex]);
   const readId = exp?.read ?? meta.section;
+  const reaction = useMemo(
+    () => (result && !dirty && (failed || status === 'pass') ? checkReaction(result, name, speed ? speedFails : attempts) : null),
+    [result, dirty, failed, status, name, speed, speedFails, attempts],
+  );
   const readMeta = readId ? sectionById(readId) : undefined;
 
   // ---- Check / Run ----
@@ -165,6 +186,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
     setStatus('compiling');
     setLines([]);
     setDirty(false);
+    checkAt.current = Date.now();
     const why = await toolchainInfo();
     if (why) { setResult(null); setLines([why]); setStatus('unavailable'); atLeastHalf(); return; }
     const src = latest.current;
@@ -181,7 +203,10 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
     setResult(r);
     setCommand(r.command);
     setLines(r.lines);
-    if (r.outcome === 'pass') {
+    if (r.outcome === 'pass' && speed) {
+      setStatus('pass');
+      setTimeout(() => setSpeedResult(finishSpeedRun()), 600);
+    } else if (r.outcome === 'pass') {
       setStatus('pass');
       const s0 = useApp.getState();
       const xpBefore = s0.xp;
@@ -193,7 +218,8 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
       const d = primaryError(r, name);
       const codes = r.diagnostics.filter((x) => x.level === 'error' && x.code).map((x) => x.code as string);
       codes.forEach((c) => seenCodes.current.add(c));
-      useApp.getState().failedCheck(name, codes);
+      if (speed) setSpeedFails((n) => n + 1);
+      else useApp.getState().failedCheck(name, codes);
       setStatus(r.outcome === 'compile-error' || (d && !r.panic) ? 'error' : 'panic');
       atLeastHalf();
     }
@@ -249,6 +275,17 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
     };
   }
 
+  /** Stop the clock at the passing Check's press and record the run (once per run). */
+  const finishSpeedRun = (): SpeedResult => {
+    if (recorded.current) return recorded.current;
+    if (runStart === null) return { kind: 'noedit', exercise: name };
+    const ms = Math.max(100, (checkAt.current || Date.now()) - runStart);
+    setRunMs(ms);
+    recorded.current = assisted.current ? { kind: 'assisted', exercise: name, ms } : { kind: 'run', outcome: useSpeedrun.getState().finish(name, ms) };
+    return recorded.current;
+  };
+  const startSpeedRun = () => replace('workspace', { arg: name, variant: 'speedrun' });
+
   // Dev-only: show the success state without the compiler (for design checks on web).
   useEffect(() => {
     if (!__DEV__) return;
@@ -263,6 +300,13 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
 
   // ---- Actions ----
   const reset = () => {
+    if (speed) {
+      setCodeNow(ex.code);
+      setStatus('idle'); setResult(null); setLines([]); setDirty(false);
+      setRunStart(null); setRunMs(null); setSpeedResult(null); setSpeedFails(0); assisted.current = false; recorded.current = null;
+      showToast('Speed run restarted. The timer starts when you type.');
+      return;
+    }
     const prev = latest.current;
     setCodeNow(ex.code);
     setStatus('idle'); setResult(null); setLines([]); setDirty(false);
@@ -271,6 +315,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
   const applyFix = (f: ExplainFix) => {
     if (!f.apply) return;
     const prev = latest.current;
+    if (speed) assisted.current = true;
     setCodeNow(f.apply(prev));
     if (f.isSolution) { useApp.getState().exPatch(name, { solutionApplied: true }); setBeforeApply(prev); }
     showToast(f.isSolution ? 'Solution applied. Check to finish.' : 'Fix applied. Check to see if it worked.', 'Undo', () => {
@@ -278,7 +323,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
       if (f.isSolution) { useApp.getState().exPatch(name, { solutionApplied: false }); setBeforeApply(null); }
     });
   };
-  const applySolution = () => { const f = solutionFix(ex.code, ex.solution, ex.xp); if (f) applyFix(f); else if (ex.solution) { setBeforeApply(latest.current); setCodeNow(ex.solution); useApp.getState().exPatch(name, { solutionApplied: true }); } };
+  const applySolution = () => { const f = solutionFix(ex.code, ex.solution, ex.xp); if (f) applyFix(f); else if (ex.solution) { if (speed) assisted.current = true; setBeforeApply(latest.current); setCodeNow(ex.solution); useApp.getState().exPatch(name, { solutionApplied: true }); } };
   const undoSolution = () => {
     if (beforeApply !== null) setCodeNow(beforeApply);
     setBeforeApply(null);
@@ -286,7 +331,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
   };
   const openBook = () => nav('reader', { arg: meta.section ?? useApp.getState().book.current });
   const openRead = () => nav('reader', { arg: readId });
-  const openMore = () => pop('exmenu', { exercise: name, onReset: reset });
+  const openMore = () => pop('exmenu', { exercise: name, onReset: reset, onSpeedRun: st?.status === 'done' ? startSpeedRun : undefined });
   const peek = () => pop('solution-early', { exercise: name, attempts, onShow: () => { useApp.getState().exPatch(name, { solutionViewed: true }); openTab('solution'); } });
   const revealHint = () => useApp.getState().exPatch(name, { hints: Math.min(3, hintsShown + 1) });
   const hideKbd = () => { editor.current?.blur(); Keyboard.dismiss(); setKbd(false); };
@@ -322,7 +367,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
         <IconButton name="arrow_back" onPress={back} label="Back" />
         <View style={{ flex: 1, minWidth: 0, gap: 3, paddingLeft: 2 }}>
           <Text style={m(17, 19.5, 600, C.text, { letterSpacing: -0.17 })} numberOfLines={1}>{name}</Text>
-          <Text style={t(13, 15.6 / 13, 400, C.secondary)} numberOfLines={1}>{meta.subtitle}</Text>
+          <Text style={t(13, 15.6 / 13, 400, C.secondary)} numberOfLines={1}>{speed ? (runStart === null ? 'Speed run · timer starts when you type' : `Speed run${bestMs !== null ? ` · best ${fmtRunTime(bestMs)}` : ''}`) : meta.subtitle}</Text>
         </View>
         <IconButton name="menu_book" color={C.strong2} onPress={openBook} label="Related reading" />
         <IconButton name="more_vert" color={C.strong2} onPress={openMore} label="More" />
@@ -338,7 +383,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
           </Row>
           <Text style={t(13, undefined, 400, C.strong2)}>{meta.diffLabel}</Text>
         </Row>
-        <Text style={m(13, undefined, 600, C.rustLight)} numberOfLines={1}>+{ex.xp} XP</Text>
+        {speed ? <SpeedTimer startedAt={runStart} finalMs={runMs} best={bestMs} /> : <Text style={m(13, undefined, 600, C.rustLight)} numberOfLines={1}>+{ex.xp} XP</Text>}
         <View style={{ flex: 1 }} />
         {kbd ? (
           <Press onPress={hideKbd} radius={20} accessibilityLabel="Hide keyboard" style={{ width: 44, height: 40, borderRadius: 20, backgroundColor: C.s4, alignItems: 'center', justifyContent: 'center' }}>
@@ -405,6 +450,7 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
               })}
             </Row>
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+              {tab === 'out' ? <FerrisBubble reaction={reaction} onNudge={() => openTab('hints')} /> : null}
               {tab === 'out' ? <OutputPanel command={command} lines={lines} wrap={wrap || status === 'unavailable'} onWrap={() => useApp.getState().setPrefs({ wrapOutput: !wrap })} /> : null}
               {tab === 'explain' ? (
                 <ExplainPanel exp={exp} readLabel={readMeta ? `${readMeta.id} ${readMeta.title}` : null} onRead={openRead}
@@ -445,6 +491,15 @@ function Workspace({ meta, entry }: { meta: NonNullable<ReturnType<typeof exerci
           onClose={() => setSuccess(null)}
           onNext={() => { const n = success.next; setSuccess(null); if (n) replace('workspace', { arg: n }); else back(); }}
           onCompare={() => { setSuccess(null); openTab('solution'); }}
+          onSpeedRun={startSpeedRun}
+        />
+      ) : null}
+      {speedResult ? (
+        <SpeedRunResult
+          result={speedResult}
+          onAgain={startSpeedRun}
+          onDone={back}
+          onClose={() => setSpeedResult(null)}
         />
       ) : null}
     </View>

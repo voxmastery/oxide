@@ -1,6 +1,6 @@
 // One command block: `$ command` header with status, ANSI output (scrolls sideways, prose wraps)
 // and action buttons for known errors.
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { C, SYN, TC } from '../../theme/tokens';
 import { m, t } from '../../theme/fonts';
@@ -13,6 +13,7 @@ import { errors } from '../../content';
 import { navActions } from '../../nav/store';
 import { lineText, type Block, type Line } from './store';
 import { submit } from './shell';
+import { FerrisTerminalLine } from '../../features/ferris';
 
 const OUT = m(12, 18, 400, TC.n);
 const BOLD = 'JetBrainsMono_700Bold';
@@ -46,6 +47,7 @@ function OneLine({ l, width }: { l: Line; width: number }) {
 }
 
 const CHUNK = 120;
+const NO_LINES: string[] = [];
 
 /** A slice of lines; re-renders only when its lines change (output streams into the last chunk). */
 const Chunk = memo(
@@ -86,6 +88,8 @@ export const BlockView = memo(function BlockView({ b, running, program, width, o
   const meta = running && program ? 'running' : run ? '' : b.st === 'err' ? `exit ${b.code}` : b.dur;
   const mc = b.st === 'err' ? C.errorText : running && program ? C.rustLight : C.tertiary;
   const acts = actions(b);
+  const failed = b.st === 'err' && !!b.cmd;
+  const plainLines = useMemo(() => (failed ? b.lines.map(lineText) : NO_LINES), [failed, b.lines]);
   const open = () => navActions().pop('cmd', { command: b.cmd, meta: b.st === 'err' ? `exit ${b.code}` : b.dur || b.cwd, output: b.lines.map(lineText) });
   return (
     <Press
@@ -118,6 +122,7 @@ export const BlockView = memo(function BlockView({ b, running, program, width, o
           ))}
         </Row>
       ) : null}
+      {failed ? <FerrisTerminalLine cmd={b.cmd} failed={failed} lines={plainLines} /> : null}
     </Press>
   );
 });

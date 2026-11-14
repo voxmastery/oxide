@@ -62,7 +62,7 @@ function Burst() {
   );
 }
 
-export function Success({ info, onNext, onCompare, onClose }: { info: SuccessInfo; onNext: () => void; onCompare: () => void; onClose: () => void }) {
+export function Success({ info, onNext, onCompare, onClose, onSpeedRun }: { info: SuccessInfo; onNext: () => void; onCompare: () => void; onClose: () => void; onSpeedRun?: () => void }) {
   const slide = useRef(new Animated.Value(0)).current;
   const [xp, setXp] = useState(0);
   useEffect(() => {
@@ -140,6 +140,12 @@ export function Success({ info, onNext, onCompare, onClose }: { info: SuccessInf
           <Press onPress={onCompare} radius={24} style={{ height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={t(15, undefined, 600, C.strong2)}>Compare with the official solution</Text>
           </Press>
+          {onSpeedRun ? (
+            <Press onPress={onSpeedRun} radius={24} accessibilityRole="button" style={{ height: 48, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Icon name="timer" size={20} color={C.strong2} />
+              <Text style={t(15, undefined, 600, C.strong2)}>Speed run from the original file</Text>
+            </Press>
+          ) : null}
         </View>
       </Animated.View>
     </View>

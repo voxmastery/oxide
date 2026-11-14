@@ -30,7 +30,7 @@ function sectionFor(ex: string, read: Record<string, number>) {
   return secs.find((s) => !read[s]) ?? secs[secs.length - 1] ?? null;
 }
 
-/** opts: { exercise, onReset, code? } (code: the editor's current text, for Copy code and reports) */
+/** opts: { exercise, onReset, code?, onSpeedRun? } (code: the editor's current text, for Copy code and reports; onSpeedRun: passed exercises only) */
 export function ExerciseMenuSheet({ opts }: OverlayProps) {
   const ex: string = opts.exercise ?? '';
   const read = useApp((s) => s.book.read);
@@ -42,6 +42,7 @@ export function ExerciseMenuSheet({ opts }: OverlayProps) {
       <MenuHeader title={ex} sub={info?.path} />
       <View style={{ paddingVertical: 8 }}>
         <MenuRow icon="restart_alt" label="Reset to the original file" onPress={() => { closePop(); showToast(`${ex} reset`); opts.onReset?.(); }} />
+        {opts.onSpeedRun ? <MenuRow icon="timer" label="Speed run from the original file" onPress={() => { closePop(); opts.onSpeedRun(); }} /> : null}
         <MenuRow icon="content_copy" label="Copy code" onPress={() => copy(opts.code ?? useApp.getState().ex[ex]?.code ?? info?.code ?? '', 'Code copied')} />
         <MenuRow icon="terminal" label="Run in the Terminal" onPress={() => nav('terminal', { params: { cwd: '~/rustlings', run: `rustlings run ${ex}` } })} />
         {sec ? <MenuRow icon="menu_book" label={`Read ${sec} ${sectionTitle(sec)}`} onPress={() => nav('reader', { arg: sec })} /> : null}
