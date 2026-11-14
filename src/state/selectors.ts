@@ -1,6 +1,8 @@
 // Derived values. Pure functions over AppData + content; screens call these with useApp(s => …).
 import { rustlings, toc, sectionById } from '../content';
 import { today, type AppData, type Mission, type MissionStep } from './app';
+import { computeStreak, type StreakInfo } from '../features/streak/engine';
+import { useStreakStore } from '../features/streak/store';
 
 // ---------- Levels ----------
 // Spec: Lv 1 0–300 "Hello, World"; Lv 7 "Borrow Checker Apprentice" up to 2,400; Lv 8 "Struct Builder" up to 3,100.
@@ -47,18 +49,12 @@ export function planDay(s: Pick<AppData, 'startDate'>, date = new Date()) {
   return { week: Math.floor(idx / 7) + 1, day: (idx % 7) + 1, index: idx };
 }
 
-export function streak(s: Pick<AppData, 'days' | 'bestStreak'>) {
-  let n = 0;
-  const d = new Date();
-  const t = s.days[today(d)];
-  const counts = (x?: { goalMet: boolean; missionDone?: boolean }) => !!x && (x.goalMet || !!x.missionDone);
-  if (counts(t)) n = 1;
-  // Today doesn't break the streak until midnight.
-  for (let i = 1; i < 4000; i++) {
-    const x = new Date(d); x.setDate(d.getDate() - i);
-    if (counts(s.days[today(x)])) n++; else break;
-  }
-  return { current: n, best: Math.max(s.bestStreak, n) };
+/**
+ * Current/best streak with freezes and rescue missions (src/features/streak/engine.ts has the rules).
+ * Pass the whole app state when you can: `ex` lets checkpoint quizzes earn freezes and rescue exercises count.
+ */
+export function streak(s: Pick<AppData, 'days' | 'bestStreak'> & Partial<Pick<AppData, 'ex'>>): StreakInfo {
+  return computeStreak({ days: s.days, bestStreak: s.bestStreak, ex: s.ex, rescues: useStreakStore.getState().rescues });
 }
 
 export const todayLog = (s: Pick<AppData, 'days'>) => s.days[today()] ?? { minutes: 0, exercises: 0, sections: 0, goalMet: false };

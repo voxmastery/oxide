@@ -29,9 +29,9 @@ const norm = (s: string) => s.replace(/`/g, '').replace(/\s+/g, ' ').trim().toLo
 
 // ---------- option ----------
 
-type OptState = 'idle' | 'picked' | 'right' | 'wrong' | 'dim';
+export type OptState = 'idle' | 'picked' | 'right' | 'wrong' | 'dim';
 
-function Option({ label, state, square, onPress, disabled }: { label: string; state: OptState; square?: boolean; onPress: () => void; disabled: boolean }) {
+export function Option({ label, state, square, onPress, disabled }: { label: string; state: OptState; square?: boolean; onPress: () => void; disabled: boolean }) {
   const bd = state === 'right' ? C.done : state === 'wrong' ? C.error : state === 'picked' ? C.rust : C.border;
   const bg = state === 'right' ? 'rgba(87,214,200,0.08)' : state === 'wrong' ? 'rgba(255,107,118,0.08)' : state === 'picked' ? C.rustTint08 : 'transparent';
   const rc = state === 'right' ? C.done : state === 'wrong' ? C.error : state === 'picked' ? C.rust : C.iconOff;
@@ -89,9 +89,9 @@ function AnswerInput({ value, onChange, onSubmit, state, placeholder, mono }: { 
 
 // ---------- one question ----------
 
-type Answered = { correct: boolean; fresh: boolean; picks?: string[]; text?: string; compiles?: boolean };
+export type Answered = { correct: boolean; fresh: boolean; picks?: string[]; text?: string; compiles?: boolean };
 
-function QuestionView({ qid, q, answered, onAnswer }: { qid: string; q: QuizQuestion; answered: Answered | null; onAnswer: (a: Answered) => void }) {
+export function QuestionView({ qid, q, answered, onAnswer }: { qid: string; q: QuizQuestion; answered: Answered | null; onAnswer: (a: Answered) => void }) {
   const done = !!answered;
   const [sel, setSel] = useState<string[]>([]);
   const [text, setText] = useState('');
