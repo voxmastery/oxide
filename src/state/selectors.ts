@@ -51,11 +51,12 @@ export function streak(s: Pick<AppData, 'days' | 'bestStreak'>) {
   let n = 0;
   const d = new Date();
   const t = s.days[today(d)];
-  if (t?.goalMet) n = 1;
+  const counts = (x?: { goalMet: boolean; missionDone?: boolean }) => !!x && (x.goalMet || !!x.missionDone);
+  if (counts(t)) n = 1;
   // Today doesn't break the streak until midnight.
   for (let i = 1; i < 4000; i++) {
     const x = new Date(d); x.setDate(d.getDate() - i);
-    if (s.days[today(x)]?.goalMet) n++; else break;
+    if (counts(s.days[today(x)])) n++; else break;
   }
   return { current: n, best: Math.max(s.bestStreak, n) };
 }
@@ -66,7 +67,7 @@ export const weeksForGoal: Record<number, number> = { 10: 36, 20: 18, 30: 12, 45
 
 // ---------- Progress ----------
 export function bookProgress(s: Pick<AppData, 'book'>) {
-  const numbered = toc.chapters.flatMap((c) => c.sections.length ? c.sections.map((x) => x.id) : c.n === 2 ? ['2'] : []);
+  const numbered = toc.chapters.filter((c) => c.n !== 'A').flatMap((c) => c.sections.length ? c.sections.map((x) => x.id) : c.n === 2 ? ['2'] : []);
   const read = numbered.filter((id) => s.book.read[id]).length;
   // Numbered sections plus chapter 2 (a single page) = the design's "of 80 sections".
   return { read, total: numbered.length, current: s.book.current, frac: read / Math.max(1, numbered.length) };
