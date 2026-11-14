@@ -67,7 +67,8 @@ export const weeksForGoal: Record<number, number> = { 10: 36, 20: 18, 30: 12, 45
 export function bookProgress(s: Pick<AppData, 'book'>) {
   const numbered = toc.chapters.flatMap((c) => c.sections.length ? c.sections.map((x) => x.id) : c.n === 2 ? ['2'] : []);
   const read = numbered.filter((id) => s.book.read[id]).length;
-  return { read, total: toc.sectionCount, current: s.book.current, frac: read / Math.max(1, toc.sectionCount) };
+  // Numbered sections plus chapter 2 (a single page) = the design's "of 80 sections".
+  return { read, total: numbered.length, current: s.book.current, frac: read / Math.max(1, numbered.length) };
 }
 
 export function rustlingsProgress(s: Pick<AppData, 'ex'>) {
