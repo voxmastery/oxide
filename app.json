@@ -27,9 +27,14 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-sharing"
+      "expo-sharing",
+      "./plugins/withOxideToolchain"
     ],
     "scheme": "oxide",
-    "backgroundColor": "#0F0E0E"
+    "backgroundColor": "#0F0E0E",
+    "extra": {
+      "toolchainPayloadUrl": "https://REPLACE-ME.example.invalid/oxide/toolchain/1.99.1/manifest.json",
+      "toolchainPayloadUrlNote": "PLACEHOLDER: host the output of toolchain/make-data-payload.sh and put its manifest.json URL here. See toolchain/README.md."
+    }
   }
 }

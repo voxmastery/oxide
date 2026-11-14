@@ -1,0 +1,39 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'app.oxide'
+version = '0.1.0'
+
+def chicoryVersion = project.findProperty('chicoryVersion') ?: '1.7.5'
+
+android {
+  namespace "expo.modules.oxidetoolchain"
+  defaultConfig {
+    versionCode 1
+    versionName '0.1.0'
+    // Chicory needs API 28+; W^X exec rules apply from API 29, which is what the toolchain
+    // layout (binaries in nativeLibraryDir) is designed for. The config plugin raises the app's
+    // minSdk to match.
+    minSdkVersion 29
+  }
+  packagingOptions {
+    resources {
+      // Chicory and commons-compress ship JPMS metadata that clashes when merged.
+      excludes += ['META-INF/versions/9/module-info.class', 'module-info.class', 'META-INF/jpms.args']
+      pickFirsts += ['logging.properties']
+    }
+  }
+}
+
+dependencies {
+  // Pure-JVM WebAssembly interpreter + WASI preview 1 (com.dylibso.chicory, Apache-2.0).
+  implementation "com.dylibso.chicory:runtime:${chicoryVersion}"
+  implementation "com.dylibso.chicory:wasi:${chicoryVersion}"
+  implementation "com.dylibso.chicory:wasm:${chicoryVersion}"
+  implementation "com.dylibso.chicory:log:${chicoryVersion}"
+  // Unpacking the payload (.tar.xz).
+  implementation "org.apache.commons:commons-compress:1.28.0"
+  implementation "org.tukaani:xz:1.12"
+}

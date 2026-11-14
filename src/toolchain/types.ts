@@ -29,7 +29,16 @@ export type ToolchainInfo = {
 
 /** One stream chunk from a running process, already split into lines. */
 export type ProcEvent =
-  | { type: 'stdout' | 'stderr'; line: string }
+  | {
+      type: 'stdout' | 'stderr';
+      line: string;
+      /**
+       * True when the line has no newline yet: a prompt such as `print!("Guess: ")` shown
+       * because the program is now waiting for input. The next event on the same stream
+       * continues this line (and closes it unless it is partial too).
+       */
+      partial?: boolean;
+    }
   | { type: 'exit'; code: number; signal?: string; durationMs: number };
 
 export interface Proc {
@@ -48,6 +57,8 @@ export type RunOptions = {
   env?: Record<string, string>;
   /** Called for every line, in order. Output keeps ANSI escape codes (CARGO_TERM_COLOR=always). */
   onEvent: (e: ProcEvent) => void;
+  /** Called each time a running program blocks reading stdin ("… is waiting for input"). */
+  onWaitingForInput?: () => void;
 };
 
 /** A compiler diagnostic from `--message-format=json` / `--error-format=json`. */
@@ -55,7 +66,19 @@ export type Diagnostic = {
   level: 'error' | 'warning' | 'note' | 'help' | 'failure-note';
   message: string;
   code: string | null;          // "E0382"
-  spans: { file: string; lineStart: number; lineEnd: number; colStart: number; colEnd: number; primary: boolean; label: string | null }[];
+  spans: {
+    file: string;
+    lineStart: number;
+    lineEnd: number;
+    colStart: number;
+    colEnd: number;
+    primary: boolean;
+    label: string | null;
+    /** rustc's `suggested_replacement` for this span (machine-applicable fixes). */
+    suggestedReplacement?: string | null;
+    /** rustc's `suggestion_applicability`: "MachineApplicable" | "MaybeIncorrect" | … */
+    applicability?: string | null;
+  }[];
   children: Diagnostic[];
   /** rustc's human-readable rendering, with ANSI colors. Shown verbatim in Output. */
   rendered: string | null;

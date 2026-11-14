@@ -1,0 +1,14 @@
+# The crates Oxide can build offline: every dependency of the Book's projects and of the
+# Rustlings exercises crate. `make-data-payload.sh` runs `cargo vendor` on this manifest.
+# Keep in sync with src/content/data/rustlings.json (crate.cargoToml) and projects.json.
+[package]
+name = "oxide-vendor"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+# The Book, chapter 2 (guessing_game) and chapter 7/14 examples: rand = "0.10.1"
+rand = "0.10"
+# Rustlings 24_async/async1
+tokio = { version = "1", features = ["fs", "macros", "rt-multi-thread"] }

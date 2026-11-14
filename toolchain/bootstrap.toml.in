@@ -1,0 +1,58 @@
+# x.py configuration for building Rust @RUST_VERSION@ to run ON the phone (host
+# aarch64-linux-android), with std for the phone (build scripts / proc-macros) and for the
+# WebAssembly targets user programs compile to. Filled in by build-android-host.sh.
+# Reference: bootstrap.example.toml in the rustc source tarball.
+change-id = "ignore"
+profile = "dist"
+
+[llvm]
+download-ci-llvm = false
+# One static LLVM inside librustc_driver; rust-lld gets its own copy. Setting link-shared = true
+# instead ships a single libLLVM.so (smaller APK when rust-lld is large); both work.
+link-shared = false
+static-libstdcpp = true
+targets = "AArch64;WebAssembly"
+experimental-targets = ""
+ninja = true
+libzstd = false
+
+[build]
+build = "x86_64-unknown-linux-gnu"
+host = ["aarch64-linux-android"]
+target = ["aarch64-linux-android", "wasm32-wasip1-threads", "wasm32-wasip1"]
+extended = true
+tools = ["cargo", "clippy", "rustfmt", "rustdoc"]
+docs = false
+sanitizers = false
+profiler = false
+# openssl, curl, libgit2 and zlib statically inside cargo
+cargo-native-static = true
+locked-deps = true
+vendor = true
+
+[rust]
+channel = "stable"
+# builds rust-lld (the linker for wasm, and ld.lld for build scripts via liboxide-cc.so)
+lld = true
+rpath = false
+jemalloc = false
+debuginfo-level = 0
+debuginfo-level-std = 0
+strip = true
+
+[target.aarch64-linux-android]
+cc = "@NDK_BIN@/aarch64-linux-android@ANDROID_API@-clang"
+cxx = "@NDK_BIN@/aarch64-linux-android@ANDROID_API@-clang++"
+ar = "@NDK_BIN@/llvm-ar"
+ranlib = "@NDK_BIN@/llvm-ranlib"
+linker = "@NDK_BIN@/aarch64-linux-android@ANDROID_API@-clang"
+
+[target.wasm32-wasip1-threads]
+wasi-root = "@WASI_SDK@/share/wasi-sysroot"
+
+[target.wasm32-wasip1]
+wasi-root = "@WASI_SDK@/share/wasi-sysroot"
+
+[dist]
+src-tarball = false
+compression-formats = ["xz"]
