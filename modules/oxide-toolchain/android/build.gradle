@@ -17,6 +17,7 @@ android {
     // layout (binaries in nativeLibraryDir) is designed for. The config plugin raises the app's
     // minSdk to match.
     minSdkVersion 29
+    consumerProguardFiles 'consumer-rules.pro'
   }
   packagingOptions {
     resources {
